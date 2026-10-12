@@ -173,6 +173,9 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .ledger-toolbar .outline-button { width: auto; min-width: 108px; }
 .ledger-check { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 10px; white-space: nowrap; }
 .ledger-check input { accent-color: var(--accent); }
+.ledger-link-summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #ead9d0; border-radius: 9px; background: #fff8f4; }
+.ledger-link-summary strong { color: var(--accent-deep); font-size: 11px; }
+.ledger-link-summary small { color: var(--muted); font-size: 10px; text-align: right; }
 .ledger-section { margin-top: 18px; }
 .ledger-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
 .ledger-heading strong { font-size: 12px; }
@@ -187,6 +190,12 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .ledger-table td strong, .ledger-table td small { display: block; }
 .ledger-table td small { margin-top: 3px; color: var(--muted); font-size: 10px; }
 .ledger-empty { color: var(--muted); text-align: center !important; }
+.backup-list { display: grid; gap: 8px; margin-top: 20px; }
+.backup-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-soft); }
+.backup-item strong, .backup-item small { display: block; }
+.backup-item strong { color: var(--ink); font-size: 12px; }
+.backup-item small { margin-top: 3px; color: var(--muted); font-size: 10px; }
+.backup-item .outline-button { width: auto; min-width: 100px; padding: 8px 10px; }
 .table-actions { display: flex; gap: 8px; margin-top: 6px; }
 .table-action { padding: 0; border: 0; background: transparent; color: var(--accent-deep); font-size: 10px; font-weight: 700; cursor: pointer; }
 .table-action:hover { text-decoration: underline; }
@@ -228,6 +237,8 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
   .data-transfer { align-items: flex-start; flex-direction: column; }
   .data-actions { width: 100%; }
   .ledger-toolbar { grid-template-columns: 1fr; }
+  .ledger-link-summary { align-items: flex-start; flex-direction: column; }
+  .ledger-link-summary small { text-align: left; }
   .form-two-col { grid-template-columns: 1fr; }
   .ledger-actions { flex-direction: column; }
   .ledger-actions .outline-button, .ledger-actions .primary-button { width: 100%; }
