@@ -71,6 +71,28 @@
         </div>
       </section>
 
+      <section class="page-section work-overview" aria-labelledby="work-overview-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">WORK QUEUE</p><h2 id="work-overview-title">今天的工作</h2></div>
+          <button class="text-button" data-search="待处理">只看待处理 <span>→</span></button>
+        </div>
+        <div class="metric-grid">
+          <article class="metric-card"><span>待处理事项</span><strong>06</strong><small>2 个今天到期</small></article>
+          <article class="metric-card"><span>档案待补充</span><strong>03</strong><small>需要联系员工或部门</small></article>
+          <article class="metric-card"><span>合同提醒</span><strong>02</strong><small>进入处理窗口</small></article>
+          <article class="metric-card metric-card-accent"><span>本月入职</span><strong>04</strong><small>已完成 2 人</small></article>
+        </div>
+        <div class="work-queue panel">
+          <div class="section-heading compact"><div><p class="eyebrow">MY WORK QUEUE</p><h3>待处理事项</h3></div><span class="count-label">示例数据</span></div>
+          <div class="queue-table" role="table" aria-label="待处理事项">
+            <div class="queue-row queue-head" role="row"><span>事项</span><span>模块</span><span>截止时间</span><span>状态</span><span></span></div>
+            <button class="queue-row" data-task-title="检查档案完整性"><span><strong>员工001 · 缺学历证明</strong><small>需要补充并完成核验</small></span><span>档案与合同</span><span>今天</span><span class="status status-warn">待补充</span><span class="queue-action">处理 →</span></button>
+            <button class="queue-row" data-task-title="合同到期提醒"><span><strong>员工002 · 合同进入提醒窗口</strong><small>先核对台账和部门负责人</small></span><span>档案与合同</span><span>10月20日</span><span class="status status-info">待处理</span><span class="queue-action">查看 →</span></button>
+            <button class="queue-row" data-task-title="我要办入职"><span><strong>员工003 · 入职准备</strong><small>工位、账号和材料清单待确认</small></span><span>入职办理</span><span>10月15日</span><span class="status status-soft">进行中</span><span class="queue-action">继续 →</span></button>
+          </div>
+        </div>
+      </section>
+
       <section id="modules" class="page-section">
         <div class="section-heading">
           <div><p class="eyebrow">HR OPERATIONS</p><h2>八大业务模块</h2></div>
