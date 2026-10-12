@@ -127,6 +127,52 @@ function importDemoCsv(file) {
   reader.readAsText(file, "utf-8");
 }
 
+function exportDemoXlsx() {
+  if (!window.XLSX) {
+    dialogContent.innerHTML = `<div class="dialog-kicker">XLSX</div><h2 class="dialog-title">Excel组件尚未加载</h2><p>当前页面暂时无法生成 Excel，请先联网刷新页面，或使用下载模板功能。</p>`;
+    dialog.showModal();
+    return;
+  }
+  const archiveRows = [["员工编号", "员工姓名", "部门", "岗位", "入职日期", "入职登记", "身份证明", "学历/资格材料", "劳动合同", "培训/试用期记录"], ["DEMO-001", workState.archive.employee, workState.archive.department, "", "", workState.archive.entry ? "√" : "✗", workState.archive.identity ? "√" : "✗", workState.archive.education ? "√" : "✗", workState.archive.contract ? "√" : "✗", workState.archive.training ? "√" : "✗"]];
+  const contractRows = [["员工编号", "员工姓名", "部门", "岗位", "合同开始日期", "合同结束日期", "提前提醒天数", "处理备注"], ["DEMO-002", workState.contract.employee, "", "", "", workState.contract.endDate, workState.contract.days, ""]];
+  const book = window.XLSX.utils.book_new();
+  window.XLSX.utils.book_append_sheet(book, window.XLSX.utils.aoa_to_sheet(archiveRows), "档案完整性");
+  window.XLSX.utils.book_append_sheet(book, window.XLSX.utils.aoa_to_sheet(contractRows), "合同到期提醒");
+  window.XLSX.writeFile(book, "HR工作台当前数据.xlsx");
+}
+
+function importDemoXlsx(file) {
+  if (!window.XLSX) {
+    dialogContent.innerHTML = `<div class="dialog-kicker">XLSX</div><h2 class="dialog-title">Excel组件尚未加载</h2><p>当前页面暂时无法解析 Excel，请先联网刷新页面，或将 Excel 另存为 CSV 后上传。</p>`;
+    dialog.showModal();
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const book = window.XLSX.read(reader.result, { type: "array", cellDates: true });
+      book.SheetNames.forEach((sheetName) => {
+        const rows = window.XLSX.utils.sheet_to_json(book.Sheets[sheetName], { defval: "" });
+        if (!rows.length) return;
+        const row = rows[0];
+        if (sheetName.includes("档案") || Object.prototype.hasOwnProperty.call(row, "学历/资格材料")) {
+          workState.archive = { employee: row["员工姓名"] || "员工001", department: row["部门"] || "市场部", entry: row["入职登记"] === "√", identity: row["身份证明"] === "√", education: row["学历/资格材料"] === "√", contract: row["劳动合同"] === "√", training: row["培训/试用期记录"] === "√" };
+        }
+        if (sheetName.includes("合同") || Object.prototype.hasOwnProperty.call(row, "合同结束日期")) {
+          const date = row["合同结束日期"] instanceof Date ? row["合同结束日期"].toISOString().slice(0, 10) : String(row["合同结束日期"] || "2026-10-20").slice(0, 10);
+          workState.contract = { employee: row["员工姓名"] || "员工002", endDate: date, days: Number(row["提前提醒天数"]) || 30 };
+        }
+      });
+      saveWorkState(); applyQueueState();
+      dialogContent.innerHTML = `<div class="dialog-kicker">DATA IN</div><h2 class="dialog-title">Excel 已导入</h2><p>档案和合同示例数据已更新并保存在当前浏览器。打开对应任务即可继续处理。</p>`;
+    } catch (error) {
+      dialogContent.innerHTML = `<div class="dialog-kicker">DATA IN</div><h2 class="dialog-title">Excel 导入失败</h2><p>请确认上传的是工作台模板或另存为 CSV 的表格。错误：${error.message}</p>`;
+    }
+    dialog.showModal();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 function applyQueueState() {
   document.querySelectorAll(".queue-row[data-queue-id]").forEach((row) => {
     const state = workState.queue[row.dataset.queueId];
@@ -192,6 +238,17 @@ const emptyState = document.querySelector("#empty-state");
 const searchInput = document.querySelector("#global-search");
 const dialog = document.querySelector("#task-dialog");
 const dialogContent = document.querySelector("#dialog-content");
+
+function hydrateTemplateLinks() {
+  if (!window.HR_XLSX_TEMPLATES) return;
+  const prefix = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,";
+  const archiveLink = document.querySelector("#archive-template-link");
+  const contractLink = document.querySelector("#contract-template-link");
+  if (archiveLink) archiveLink.href = prefix + window.HR_XLSX_TEMPLATES.archive;
+  if (contractLink) contractLink.href = prefix + window.HR_XLSX_TEMPLATES.contract;
+}
+
+hydrateTemplateLinks();
 
 const allTasks = modules.flatMap((module) => module.tasks.map((title) => ({
   title,
@@ -294,6 +351,8 @@ document.querySelector("#reset-demo-data").addEventListener("click", () => {
 });
 document.querySelector("#export-demo-csv").addEventListener("click", exportDemoCsv);
 document.querySelector("#import-demo-csv").addEventListener("change", (event) => { if (event.target.files[0]) importDemoCsv(event.target.files[0]); });
+document.querySelector("#export-demo-xlsx").addEventListener("click", exportDemoXlsx);
+document.querySelector("#import-demo-xlsx").addEventListener("change", (event) => { if (event.target.files[0]) importDemoXlsx(event.target.files[0]); });
 document.querySelector("[data-task='onboarding']").addEventListener("click", () => openTask("onboarding"));
 document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
 document.querySelector("#dialog-close").addEventListener("click", () => dialog.close());
