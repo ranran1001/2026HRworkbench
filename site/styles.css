@@ -146,6 +146,18 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .dialog-section p, .dialog-section li { color: var(--ink-soft); font-size: 12px; }
 .dialog-section ul { margin: 0; padding-left: 19px; }
 .empty-state { padding: 35px 10px; color: var(--muted); text-align: center; font-size: 12px; }
+.mini-tool-form { display: grid; gap: 13px; margin-top: 22px; }
+.mini-tool-form > label { display: grid; gap: 5px; color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+.mini-tool-form input:not([type="checkbox"]) { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; outline: 0; color: var(--ink); background: var(--surface-soft); font-size: 12px; }
+.mini-tool-form input:not([type="checkbox"]):focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.mini-tool-form fieldset { display: grid; gap: 8px; margin: 2px 0 4px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; }
+.mini-tool-form legend { padding: 0 5px; color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+.check-row { display: flex; align-items: center; gap: 8px; color: var(--ink-soft); font-size: 11px; font-weight: 400; }
+.check-row input { accent-color: var(--accent); }
+.tool-result { margin-top: 16px; padding: 13px; border: 1px solid #edd4ca; border-radius: 10px; background: #fff8f4; }
+.tool-result strong { display: block; color: var(--accent-deep); font-size: 12px; }
+.tool-result p { margin: 5px 0; color: var(--ink-soft); font-size: 11px; }
+.tool-result small { color: var(--muted); font-size: 10px; }
 
 @media (max-width: 920px) {
   .sidebar { width: 205px; }
