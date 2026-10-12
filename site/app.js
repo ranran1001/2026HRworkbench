@@ -77,6 +77,56 @@ function saveWorkState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(workState));
 }
 
+function csvEscape(value) {
+  const text = String(value ?? "");
+  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function exportDemoCsv() {
+  const headers = ["tool", "employee", "department", "endDate", "reminderDays", "entry", "identity", "education", "contract", "training", "status"];
+  const rows = [
+    ["archive", workState.archive.employee, workState.archive.department, "", "", workState.archive.entry, workState.archive.identity, workState.archive.education, workState.archive.contract, workState.archive.training, workState.queue.archive.text],
+    ["contract", workState.contract.employee, "", workState.contract.endDate, workState.contract.days, "", "", "", "", "", workState.queue.contract.text],
+  ];
+  const csv = `\ufeff${headers.join(",")}\n${rows.map((row) => row.map(csvEscape).join(",")).join("\n")}\n`;
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  link.download = "hr-workbench-demo-data.csv";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function parseCsvLine(line) {
+  const cells = []; let cell = ""; let quoted = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    if (char === '"' && line[i + 1] === '"' && quoted) { cell += '"'; i += 1; }
+    else if (char === '"') quoted = !quoted;
+    else if (char === "," && !quoted) { cells.push(cell); cell = ""; }
+    else cell += char;
+  }
+  cells.push(cell);
+  return cells;
+}
+
+function importDemoCsv(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const lines = String(reader.result).replace(/^\ufeff/, "").trim().split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) return;
+    const headers = parseCsvLine(lines[0]);
+    lines.slice(1).forEach((line) => {
+      const values = parseCsvLine(line); const row = Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""]));
+      if (row.tool === "archive") workState.archive = { employee: row.employee || "员工001", department: row.department || "市场部", entry: row.entry === "true", identity: row.identity === "true", education: row.education === "true", contract: row.contract === "true", training: row.training === "true" };
+      if (row.tool === "contract") workState.contract = { employee: row.employee || "员工002", endDate: row.endDate || "2026-10-20", days: Number(row.reminderDays) || 30 };
+    });
+    saveWorkState(); applyQueueState();
+    dialogContent.innerHTML = `<div class="dialog-kicker">DATA IN</div><h2 class="dialog-title">CSV 已导入</h2><p>示例数据已更新并保存在当前浏览器。打开档案检查或合同提醒工具即可继续处理。</p>`;
+    dialog.showModal();
+  };
+  reader.readAsText(file, "utf-8");
+}
+
 function applyQueueState() {
   document.querySelectorAll(".queue-row[data-queue-id]").forEach((row) => {
     const state = workState.queue[row.dataset.queueId];
@@ -242,6 +292,8 @@ document.querySelector("#reset-demo-data").addEventListener("click", () => {
   dialogContent.innerHTML = `<div class="dialog-kicker">DEMO DATA</div><h2 class="dialog-title">示例数据已重置</h2><p>工作台已恢复为初始脱敏示例。真实员工信息不会被写入这个公开版网页。</p>`;
   dialog.showModal();
 });
+document.querySelector("#export-demo-csv").addEventListener("click", exportDemoCsv);
+document.querySelector("#import-demo-csv").addEventListener("change", (event) => { if (event.target.files[0]) importDemoCsv(event.target.files[0]); });
 document.querySelector("[data-task='onboarding']").addEventListener("click", () => openTask("onboarding"));
 document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
 document.querySelector("#dialog-close").addEventListener("click", () => dialog.close());
