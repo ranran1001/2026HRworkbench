@@ -59,13 +59,23 @@ const STORAGE_KEY = "hr-workbench-demo-v06";
 const defaultWorkState = {
   archive: { employee: "员工001", department: "市场部", entry: true, identity: true, education: false, contract: true, training: false },
   contract: { employee: "员工002", endDate: "2026-10-20", days: 30 },
+  archiveRows: [
+    { id: "DEMO-001", name: "员工001", department: "市场部", position: "市场专员", entryDate: "2026-10-01", entry: true, identity: true, education: false, contract: true, training: false },
+    { id: "DEMO-002", name: "员工002", department: "技术部", position: "IT专员", entryDate: "2026-09-15", entry: true, identity: true, education: true, contract: true, training: true },
+    { id: "DEMO-003", name: "员工003", department: "综合部", position: "HR专员", entryDate: "2026-10-08", entry: true, identity: false, education: true, contract: false, training: true },
+  ],
+  contractRows: [
+    { id: "DEMO-001", name: "员工001", department: "市场部", position: "市场专员", startDate: "2026-10-01", endDate: "2027-10-01", days: 30, note: "" },
+    { id: "DEMO-002", name: "员工002", department: "技术部", position: "IT专员", startDate: "2026-09-15", endDate: "2028-04-01", days: 60, note: "" },
+    { id: "DEMO-003", name: "员工003", department: "综合部", position: "HR专员", startDate: "2026-10-08", endDate: "2026-11-15", days: 30, note: "待补充合同扫描件" },
+  ],
   queue: { archive: { text: "待补充", className: "status-warn" }, contract: { text: "待处理", className: "status-info" } },
 };
 
 function loadWorkState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return saved ? { ...defaultWorkState, ...saved, archive: { ...defaultWorkState.archive, ...saved.archive }, contract: { ...defaultWorkState.contract, ...saved.contract }, queue: { ...defaultWorkState.queue, ...saved.queue } } : structuredClone(defaultWorkState);
+    return saved ? { ...defaultWorkState, ...saved, archive: { ...defaultWorkState.archive, ...saved.archive }, contract: { ...defaultWorkState.contract, ...saved.contract }, archiveRows: saved.archiveRows || structuredClone(defaultWorkState.archiveRows), contractRows: saved.contractRows || structuredClone(defaultWorkState.contractRows), queue: { ...defaultWorkState.queue, ...saved.queue } } : structuredClone(defaultWorkState);
   } catch (error) {
     return structuredClone(defaultWorkState);
   }
@@ -133,12 +143,39 @@ function exportDemoXlsx() {
     dialog.showModal();
     return;
   }
-  const archiveRows = [["员工编号", "员工姓名", "部门", "岗位", "入职日期", "入职登记", "身份证明", "学历/资格材料", "劳动合同", "培训/试用期记录"], ["DEMO-001", workState.archive.employee, workState.archive.department, "", "", workState.archive.entry ? "√" : "✗", workState.archive.identity ? "√" : "✗", workState.archive.education ? "√" : "✗", workState.archive.contract ? "√" : "✗", workState.archive.training ? "√" : "✗"]];
-  const contractRows = [["员工编号", "员工姓名", "部门", "岗位", "合同开始日期", "合同结束日期", "提前提醒天数", "处理备注"], ["DEMO-002", workState.contract.employee, "", "", "", workState.contract.endDate, workState.contract.days, ""]];
+  const archiveRows = [["员工编号", "员工姓名", "部门", "岗位", "入职日期", "入职登记", "身份证明", "学历/资格材料", "劳动合同", "培训/试用期记录"], ...workState.archiveRows.map((row) => [row.id, row.name, row.department, row.position, row.entryDate, row.entry ? "√" : "✗", row.identity ? "√" : "✗", row.education ? "√" : "✗", row.contract ? "√" : "✗", row.training ? "√" : "✗"])];
+  const contractRows = [["员工编号", "员工姓名", "部门", "岗位", "合同开始日期", "合同结束日期", "提前提醒天数", "处理备注"], ...workState.contractRows.map((row) => [row.id, row.name, row.department, row.position, row.startDate, row.endDate, row.days, row.note || ""])];
   const book = window.XLSX.utils.book_new();
   window.XLSX.utils.book_append_sheet(book, window.XLSX.utils.aoa_to_sheet(archiveRows), "档案完整性");
   window.XLSX.utils.book_append_sheet(book, window.XLSX.utils.aoa_to_sheet(contractRows), "合同到期提醒");
   window.XLSX.writeFile(book, "HR工作台当前数据.xlsx");
+}
+
+function dateCellToIso(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString().slice(0, 10);
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  const normalized = text.replace(/[./年]/g, "-").replace("月", "-").replace("日", "");
+  const parsed = new Date(normalized);
+  return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString().slice(0, 10);
+}
+
+function checkRows(rows, type) {
+  const errors = [];
+  const seen = new Set();
+  rows.forEach((row, index) => {
+    const excelRow = index + 2;
+    if (!row.id) errors.push(`第 ${excelRow} 行：缺少员工编号`);
+    if (!row.name) errors.push(`第 ${excelRow} 行：缺少员工姓名`);
+    if (row.id && seen.has(row.id)) errors.push(`第 ${excelRow} 行：员工编号 ${row.id} 重复`);
+    if (row.id) seen.add(row.id);
+    if (type === "archive" && row.entryDate && !dateCellToIso(row.entryDate)) errors.push(`第 ${excelRow} 行：入职日期格式无法识别`);
+    if (type === "contract") {
+      if (!row.endDate || !dateCellToIso(row.endDate)) errors.push(`第 ${excelRow} 行：合同结束日期为空或格式错误`);
+      if (row.days === "" || Number.isNaN(Number(row.days)) || Number(row.days) < 0) errors.push(`第 ${excelRow} 行：提前提醒天数必须是 0 或更大的数字`);
+    }
+  });
+  return errors;
 }
 
 function importDemoXlsx(file) {
@@ -151,20 +188,28 @@ function importDemoXlsx(file) {
   reader.onload = () => {
     try {
       const book = window.XLSX.read(reader.result, { type: "array", cellDates: true });
+      const imported = { archiveRows: null, contractRows: null };
+      const errors = [];
       book.SheetNames.forEach((sheetName) => {
         const rows = window.XLSX.utils.sheet_to_json(book.Sheets[sheetName], { defval: "" });
         if (!rows.length) return;
         const row = rows[0];
         if (sheetName.includes("档案") || Object.prototype.hasOwnProperty.call(row, "学历/资格材料")) {
-          workState.archive = { employee: row["员工姓名"] || "员工001", department: row["部门"] || "市场部", entry: row["入职登记"] === "√", identity: row["身份证明"] === "√", education: row["学历/资格材料"] === "√", contract: row["劳动合同"] === "√", training: row["培训/试用期记录"] === "√" };
+          imported.archiveRows = rows.filter((item) => item["员工编号"] || item["员工姓名"]).map((item) => ({ id: String(item["员工编号"] || "").trim(), name: String(item["员工姓名"] || "").trim(), department: String(item["部门"] || "").trim(), position: String(item["岗位"] || "").trim(), entryDate: dateCellToIso(item["入职日期"]), entry: item["入职登记"] === "√", identity: item["身份证明"] === "√", education: item["学历/资格材料"] === "√", contract: item["劳动合同"] === "√", training: item["培训/试用期记录"] === "√" }));
+          errors.push(...checkRows(imported.archiveRows, "archive"));
         }
         if (sheetName.includes("合同") || Object.prototype.hasOwnProperty.call(row, "合同结束日期")) {
-          const date = row["合同结束日期"] instanceof Date ? row["合同结束日期"].toISOString().slice(0, 10) : String(row["合同结束日期"] || "2026-10-20").slice(0, 10);
-          workState.contract = { employee: row["员工姓名"] || "员工002", endDate: date, days: Number(row["提前提醒天数"]) || 30 };
+          imported.contractRows = rows.filter((item) => item["员工编号"] || item["员工姓名"]).map((item) => ({ id: String(item["员工编号"] || "").trim(), name: String(item["员工姓名"] || "").trim(), department: String(item["部门"] || "").trim(), position: String(item["岗位"] || "").trim(), startDate: dateCellToIso(item["合同开始日期"]), endDate: dateCellToIso(item["合同结束日期"]), days: Number(item["提前提醒天数"]), note: String(item["处理备注"] || "").trim() }));
+          errors.push(...checkRows(imported.contractRows, "contract"));
         }
       });
+      if (errors.length) throw new Error(errors.slice(0, 8).join("；") + (errors.length > 8 ? `；另有 ${errors.length - 8} 条错误` : ""));
+      if (imported.archiveRows) workState.archiveRows = imported.archiveRows;
+      if (imported.contractRows) workState.contractRows = imported.contractRows;
+      if (workState.archiveRows[0]) workState.archive = { employee: workState.archiveRows[0].name, department: workState.archiveRows[0].department, entry: workState.archiveRows[0].entry, identity: workState.archiveRows[0].identity, education: workState.archiveRows[0].education, contract: workState.archiveRows[0].contract, training: workState.archiveRows[0].training };
+      if (workState.contractRows[0]) workState.contract = { employee: workState.contractRows[0].name, endDate: workState.contractRows[0].endDate, days: workState.contractRows[0].days };
       saveWorkState(); applyQueueState();
-      dialogContent.innerHTML = `<div class="dialog-kicker">DATA IN</div><h2 class="dialog-title">Excel 已导入</h2><p>档案和合同示例数据已更新并保存在当前浏览器。打开对应任务即可继续处理。</p>`;
+      dialogContent.innerHTML = `<div class="dialog-kicker">DATA IN</div><h2 class="dialog-title">Excel 已导入</h2><p>已读取 ${workState.archiveRows.length} 条档案记录、${workState.contractRows.length} 条合同记录，并完成基础字段检查。</p><button class="primary-button" type="button" onclick="openLedgerTool()">查看员工台账 <span>→</span></button>`;
     } catch (error) {
       dialogContent.innerHTML = `<div class="dialog-kicker">DATA IN</div><h2 class="dialog-title">Excel 导入失败</h2><p>请确认上传的是工作台模板或另存为 CSV 的表格。错误：${error.message}</p>`;
     }
@@ -229,6 +274,47 @@ function bindInteractiveTool(title) {
       result.innerHTML = `<strong>${form.get("employee")}：${status}</strong><p>合同结束日：${form.get("endDate")} · 剩余 ${remaining} 天 · 提前 ${days} 天提醒</p><small>下一步：核对合同台账、部门意见和员工意向；不要仅凭公式自动决定续签或终止。</small>`;
     });
   }
+}
+
+function contractStatus(row) {
+  const end = new Date(`${row.endDate}T00:00:00`);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const remaining = Math.ceil((end - today) / 86400000);
+  if (remaining < 0) return { text: "已到期", className: "status-warn", remaining };
+  if (remaining <= Number(row.days)) return { text: "进入提醒窗口", className: "status-info", remaining };
+  return { text: "暂未到窗口", className: "status-soft", remaining };
+}
+
+function archiveStatus(row) {
+  const missing = [row.entry, row.identity, row.education, row.contract, row.training].filter((item) => !item).length;
+  return missing ? { text: `待补充 ${missing} 项`, className: "status-warn" } : { text: "待核验", className: "status-info" };
+}
+
+function safeCell(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+}
+
+function openLedgerTool() {
+  const render = (keyword = "", statusFilter = "all") => {
+    const query = keyword.trim().toLowerCase();
+    const archive = workState.archiveRows.filter((row) => {
+      const status = archiveStatus(row).text;
+      const matchesText = !query || [row.id, row.name, row.department, row.position].join(" ").toLowerCase().includes(query);
+      return matchesText && (statusFilter === "all" || (statusFilter === "pending" && status.includes("待补充")) || (statusFilter === "verify" && status === "待核验"));
+    });
+    const contracts = workState.contractRows.filter((row) => {
+      const status = contractStatus(row);
+      const matchesText = !query || [row.id, row.name, row.department, row.position].join(" ").toLowerCase().includes(query);
+      return matchesText && (statusFilter === "all" || (statusFilter === "expired" && status.text === "已到期") || (statusFilter === "window" && status.text === "进入提醒窗口"));
+    });
+    dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 入职档案与合同</div><h2 class="dialog-title">员工台账</h2><p>先用编号、姓名、部门或岗位定位记录，再根据状态处理。导入错误会按行提示，不会静默覆盖。</p><div class="ledger-toolbar"><input id="ledger-search" placeholder="搜索员工、部门或岗位" value="${safeCell(keyword)}" /><select id="ledger-status"><option value="all" ${statusFilter === "all" ? "selected" : ""}>全部状态</option><option value="pending" ${statusFilter === "pending" ? "selected" : ""}>档案待补充</option><option value="verify" ${statusFilter === "verify" ? "selected" : ""}>档案待核验</option><option value="window" ${statusFilter === "window" ? "selected" : ""}>合同提醒窗口</option><option value="expired" ${statusFilter === "expired" ? "selected" : ""}>合同已到期</option></select></div><div class="ledger-section"><div class="ledger-heading"><strong>档案完整性 <span>${archive.length}/${workState.archiveRows.length}</span></strong><small>按员工逐行查看材料状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>部门/岗位</th><th>材料状态</th></tr></thead><tbody>${archive.map((row) => { const status = archiveStatus(row); return `<tr><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.department)}<small>${safeCell(row.position)}</small></td><td><span class="status ${status.className}">${status.text}</span></td></tr>`; }).join("") || `<tr><td colspan="3" class="ledger-empty">没有匹配的档案记录</td></tr>`}</tbody></table></div></div><div class="ledger-section"><div class="ledger-heading"><strong>合同到期 <span>${contracts.length}/${workState.contractRows.length}</span></strong><small>根据结束日期和提醒天数计算</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>合同结束日</th><th>状态</th></tr></thead><tbody>${contracts.map((row) => { const status = contractStatus(row); return `<tr><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.endDate)}<small>剩余 ${status.remaining} 天</small></td><td><span class="status ${status.className}">${status.text}</span></td></tr>`; }).join("") || `<tr><td colspan="3" class="ledger-empty">没有匹配的合同记录</td></tr>`}</tbody></table></div></div><div class="ledger-actions"><button class="outline-button" id="ledger-export">导出当前 Excel <span>↓</span></button><button class="primary-button" id="ledger-close">完成查看 <span>×</span></button></div>`;
+    document.querySelector("#ledger-search").addEventListener("input", (event) => { const value = event.target.value; render(value, document.querySelector("#ledger-status").value); const next = document.querySelector("#ledger-search"); next.focus(); next.setSelectionRange(value.length, value.length); });
+    document.querySelector("#ledger-status").addEventListener("change", (event) => render(document.querySelector("#ledger-search").value, event.target.value));
+    document.querySelector("#ledger-export").addEventListener("click", exportDemoXlsx);
+    document.querySelector("#ledger-close").addEventListener("click", () => dialog.close());
+  };
+  render();
+  dialog.showModal();
 }
 
 const moduleGrid = document.querySelector("#module-grid");
@@ -353,6 +439,7 @@ document.querySelector("#export-demo-csv").addEventListener("click", exportDemoC
 document.querySelector("#import-demo-csv").addEventListener("change", (event) => { if (event.target.files[0]) importDemoCsv(event.target.files[0]); });
 document.querySelector("#export-demo-xlsx").addEventListener("click", exportDemoXlsx);
 document.querySelector("#import-demo-xlsx").addEventListener("change", (event) => { if (event.target.files[0]) importDemoXlsx(event.target.files[0]); });
+document.querySelector("#open-ledger").addEventListener("click", openLedgerTool);
 document.querySelector("[data-task='onboarding']").addEventListener("click", () => openTask("onboarding"));
 document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
 document.querySelector("#dialog-close").addEventListener("click", () => dialog.close());
