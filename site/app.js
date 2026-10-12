@@ -55,12 +55,46 @@ const taskDetails = {
   },
 };
 
+const STORAGE_KEY = "hr-workbench-demo-v06";
+const defaultWorkState = {
+  archive: { employee: "员工001", department: "市场部", entry: true, identity: true, education: false, contract: true, training: false },
+  contract: { employee: "员工002", endDate: "2026-10-20", days: 30 },
+  queue: { archive: { text: "待补充", className: "status-warn" }, contract: { text: "待处理", className: "status-info" } },
+};
+
+function loadWorkState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    return saved ? { ...defaultWorkState, ...saved, archive: { ...defaultWorkState.archive, ...saved.archive }, contract: { ...defaultWorkState.contract, ...saved.contract }, queue: { ...defaultWorkState.queue, ...saved.queue } } : structuredClone(defaultWorkState);
+  } catch (error) {
+    return structuredClone(defaultWorkState);
+  }
+}
+
+let workState = loadWorkState();
+
+function saveWorkState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(workState));
+}
+
+function applyQueueState() {
+  document.querySelectorAll(".queue-row[data-queue-id]").forEach((row) => {
+    const state = workState.queue[row.dataset.queueId];
+    const badge = row.querySelector(".status");
+    if (!state || !badge) return;
+    badge.textContent = state.text;
+    badge.className = `status ${state.className}`;
+  });
+}
+
 function renderInteractiveTool(title) {
   if (title === "检查档案完整性") {
-    return `<div class="dialog-kicker">TASK TOOL · 档案检查</div><h2 class="dialog-title">检查档案完整性</h2><p>填写一名员工的示例资料状态，系统会生成缺失项和下一步处理建议。</p><form id="archive-check-form" class="mini-tool-form"><label>员工姓名<input name="employee" value="员工001" required /></label><label>部门<input name="department" value="市场部" required /></label><fieldset><legend>材料状态</legend><label class="check-row"><input type="checkbox" name="entry" checked /> 入职登记</label><label class="check-row"><input type="checkbox" name="identity" checked /> 身份证明</label><label class="check-row"><input type="checkbox" name="education" /> 学历/资格材料</label><label class="check-row"><input type="checkbox" name="contract" checked /> 劳动合同</label><label class="check-row"><input type="checkbox" name="training" /> 培训/试用期记录</label></fieldset><button class="primary-button" type="submit">生成检查结果 <span>→</span></button></form><div id="archive-result" class="tool-result" hidden></div>`;
+    const a = workState.archive;
+    return `<div class="dialog-kicker">TASK TOOL · 档案检查</div><h2 class="dialog-title">检查档案完整性</h2><p>填写一名员工的示例资料状态，系统会生成缺失项和下一步处理建议。数据会保存在当前浏览器。</p><form id="archive-check-form" class="mini-tool-form"><label>员工姓名<input name="employee" value="${a.employee}" required /></label><label>部门<input name="department" value="${a.department}" required /></label><fieldset><legend>材料状态</legend><label class="check-row"><input type="checkbox" name="entry" ${a.entry ? "checked" : ""} /> 入职登记</label><label class="check-row"><input type="checkbox" name="identity" ${a.identity ? "checked" : ""} /> 身份证明</label><label class="check-row"><input type="checkbox" name="education" ${a.education ? "checked" : ""} /> 学历/资格材料</label><label class="check-row"><input type="checkbox" name="contract" ${a.contract ? "checked" : ""} /> 劳动合同</label><label class="check-row"><input type="checkbox" name="training" ${a.training ? "checked" : ""} /> 培训/试用期记录</label></fieldset><button class="primary-button" type="submit">保存并生成结果 <span>→</span></button></form><div id="archive-result" class="tool-result" hidden></div>`;
   }
   if (title === "合同到期提醒") {
-    return `<div class="dialog-kicker">TASK TOOL · 合同台账</div><h2 class="dialog-title">合同到期提醒</h2><p>根据合同结束日期和提醒提前天数，生成提醒状态。结果只用于辅助核对，不自动做续签或终止判断。</p><form id="contract-reminder-form" class="mini-tool-form"><label>员工姓名<input name="employee" value="员工002" required /></label><label>合同结束日期<input name="endDate" type="date" value="2026-10-20" required /></label><label>提前提醒天数<input name="days" type="number" value="30" min="0" required /></label><button class="primary-button" type="submit">计算提醒状态 <span>→</span></button></form><div id="contract-result" class="tool-result" hidden></div>`;
+    const c = workState.contract;
+    return `<div class="dialog-kicker">TASK TOOL · 合同台账</div><h2 class="dialog-title">合同到期提醒</h2><p>根据合同结束日期和提醒提前天数，生成提醒状态。数据会保存在当前浏览器。</p><form id="contract-reminder-form" class="mini-tool-form"><label>员工姓名<input name="employee" value="${c.employee}" required /></label><label>合同结束日期<input name="endDate" type="date" value="${c.endDate}" required /></label><label>提前提醒天数<input name="days" type="number" value="${c.days}" min="0" required /></label><button class="primary-button" type="submit">保存并计算状态 <span>→</span></button></form><div id="contract-result" class="tool-result" hidden></div>`;
   }
   return "";
 }
@@ -73,6 +107,9 @@ function bindInteractiveTool(title) {
       const labels = { entry: "入职登记", identity: "身份证明", education: "学历/资格材料", contract: "劳动合同", training: "培训/试用期记录" };
       const missing = Object.entries(labels).filter(([key]) => !form.get(key)).map(([, label]) => label);
       const name = form.get("employee");
+      workState.archive = { employee: name, department: form.get("department"), ...Object.fromEntries(Object.keys(labels).map((key) => [key, Boolean(form.get(key))])) };
+      workState.queue.archive = { text: missing.length ? "待补充" : "待核验", className: missing.length ? "status-warn" : "status-info" };
+      saveWorkState(); applyQueueState();
       const result = document.querySelector("#archive-result");
       result.hidden = false;
       result.innerHTML = missing.length ? `<strong>${name}：发现 ${missing.length} 项待补充</strong><p>${missing.join("、")}</p><small>建议：指定责任人和截止时间后再标记为已归档。</small>` : `<strong>${name}：当前清单已齐全</strong><p>仍需要由 HR 完成原件核验、归档位置登记和最后更新时间记录。</p>`;
@@ -87,6 +124,10 @@ function bindInteractiveTool(title) {
       const remaining = Math.ceil((end - today) / 86400000);
       const days = Number(form.get("days"));
       const status = remaining < 0 ? "已到期" : remaining <= days ? "进入提醒窗口" : "暂未到提醒窗口";
+      const queueStatus = remaining < 0 ? { text: "已到期", className: "status-warn" } : remaining <= days ? { text: "待处理", className: "status-info" } : { text: "未到窗口", className: "status-soft" };
+      workState.contract = { employee: form.get("employee"), endDate: form.get("endDate"), days };
+      workState.queue.contract = queueStatus;
+      saveWorkState(); applyQueueState();
       const result = document.querySelector("#contract-result");
       result.hidden = false;
       result.innerHTML = `<strong>${form.get("employee")}：${status}</strong><p>合同结束日：${form.get("endDate")} · 剩余 ${remaining} 天 · 提前 ${days} 天提醒</p><small>下一步：核对合同台账、部门意见和员工意向；不要仅凭公式自动决定续签或终止。</small>`;
@@ -170,6 +211,7 @@ function openTask(title) {
 
 renderModules();
 renderTasks();
+applyQueueState();
 
 searchInput.addEventListener("input", (event) => {
   document.querySelectorAll(".module-card").forEach((item) => item.classList.remove("is-selected"));
@@ -192,6 +234,13 @@ document.querySelector("#show-all").addEventListener("click", () => {
   searchInput.value = "";
   renderTasks();
   document.querySelector("#task-panel").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+document.querySelector("#reset-demo-data").addEventListener("click", () => {
+  workState = structuredClone(defaultWorkState);
+  saveWorkState();
+  applyQueueState();
+  dialogContent.innerHTML = `<div class="dialog-kicker">DEMO DATA</div><h2 class="dialog-title">示例数据已重置</h2><p>工作台已恢复为初始脱敏示例。真实员工信息不会被写入这个公开版网页。</p>`;
+  dialog.showModal();
 });
 document.querySelector("[data-task='onboarding']").addEventListener("click", () => openTask("onboarding"));
 document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
