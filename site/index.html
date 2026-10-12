@@ -128,8 +128,8 @@
           <article class="tool-card"><div class="tool-icon">↗</div><div><h3>日期与提醒</h3><p>试用期、合同到期和培训节点的提醒入口。</p></div><span>待补充</span></article>
         </div>
         <div class="data-transfer panel">
-          <div><p class="eyebrow">DATA IN / DATA OUT</p><h3>示例数据管理</h3><p>把当前脱敏示例导出为 CSV；Excel 可直接打开，也可以另存为 CSV 后导入。</p></div>
-          <div class="data-actions"><button class="outline-button" id="export-demo-csv">导出 CSV <span>↓</span></button><label class="file-button">导入 CSV<input id="import-demo-csv" type="file" accept=".csv,text/csv" /></label></div>
+          <div><p class="eyebrow">DATA IN / DATA OUT</p><h3>示例数据管理</h3><p>直接下载 Excel，填好后上传；也可以导出当前数据。下载模板不需要联网，Excel 上传与导出需要页面加载 Excel 组件。</p></div>
+          <div class="data-actions"><a id="archive-template-link" class="file-button" href="assets/HR档案完整性清单模板.xlsx" download>下载档案 Excel</a><a id="contract-template-link" class="file-button" href="assets/HR合同到期提醒模板.xlsx" download>下载合同 Excel</a><button class="outline-button" id="export-demo-xlsx">导出当前 Excel <span>↓</span></button><label class="file-button">上传 Excel<input id="import-demo-xlsx" type="file" accept=".xlsx,.xls,.csv,text/csv" /></label><button class="outline-button" id="export-demo-csv">备用 CSV <span>↓</span></button><label class="file-button">上传 CSV<input id="import-demo-csv" type="file" accept=".csv,text/csv" /></label></div>
         </div>
       </section>
 
@@ -146,6 +146,8 @@
     <button class="dialog-close" id="dialog-close" aria-label="关闭">×</button>
     <div id="dialog-content"></div>
   </dialog>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="template-data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
