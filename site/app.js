@@ -93,14 +93,25 @@ function createWorkStateBackup(reason) {
   workState.backups = [snapshot, ...(workState.backups || [])].slice(0, 5);
 }
 
-function rollbackLastBackup() {
-  const backup = workState.backups?.[0];
+function restoreBackup(index = 0) {
+  const backup = workState.backups?.[index];
   if (!backup) return;
-  const backups = workState.backups.slice(1);
+  const backups = workState.backups.filter((_, itemIndex) => itemIndex !== index);
   workState = { ...workState, archive: backup.archive, contract: backup.contract, archiveRows: backup.archiveRows, contractRows: backup.contractRows, queue: backup.queue, backups };
   saveWorkState();
   applyQueueState();
   openLedgerTool();
+}
+
+function rollbackLastBackup() {
+  restoreBackup(0);
+}
+
+function openBackupManager() {
+  const backups = workState.backups || [];
+  dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · VERSION HISTORY</div><h2 class="dialog-title">备份与恢复</h2><p>每次导入、新增、编辑和归档前都会保存一个快照。选择某个版本恢复后，该版本会从备份列表中移除。</p><div class="backup-list">${backups.map((backup, index) => `<div class="backup-item"><div><strong>${safeCell(backup.reason || "未命名变更")}</strong><small>${safeCell(backup.createdAt || "")}</small></div><button class="outline-button" data-restore-backup="${index}">恢复此版本</button></div>`).join("") || `<div class="ledger-empty">当前还没有可恢复的备份</div>`}</div><div class="ledger-actions"><button class="primary-button" id="backup-close">返回台账 <span>→</span></button></div>`;
+  document.querySelectorAll("[data-restore-backup]").forEach((button) => button.addEventListener("click", () => restoreBackup(Number(button.dataset.restoreBackup))));
+  document.querySelector("#backup-close").addEventListener("click", openLedgerTool);
 }
 
 function csvEscape(value) {
@@ -311,9 +322,27 @@ function safeCell(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
 }
 
+function getEmployeeLinkSummary() {
+  const archiveIds = new Set(workState.archiveRows.map((row) => row.id).filter(Boolean));
+  const contractIds = new Set(workState.contractRows.map((row) => row.id).filter(Boolean));
+  const allIds = new Set([...archiveIds, ...contractIds]);
+  const linked = [...allIds].filter((id) => archiveIds.has(id) && contractIds.has(id));
+  const unlinked = [...allIds].filter((id) => !archiveIds.has(id) || !contractIds.has(id));
+  return { total: allIds.size, linked: linked.length, unlinked };
+}
+
+function restoreEmployee(id) {
+  createWorkStateBackup("恢复归档员工");
+  workState.archiveRows = workState.archiveRows.map((row) => row.id === id ? { ...row, archived: false } : row);
+  workState.contractRows = workState.contractRows.map((row) => row.id === id ? { ...row, archived: false } : row);
+  saveWorkState();
+  openLedgerTool("", "all", true);
+}
+
 function openLedgerTool() {
   const render = (keyword = "", statusFilter = "all", showArchived = false) => {
     const query = keyword.trim().toLowerCase();
+    const linkSummary = getEmployeeLinkSummary();
     const archive = workState.archiveRows.filter((row) => {
       const status = archiveStatus(row).text;
       const matchesText = !query || [row.id, row.name, row.department, row.position].join(" ").toLowerCase().includes(query);
@@ -328,19 +357,21 @@ function openLedgerTool() {
     });
     const archiveRows = archive.map((row) => {
       const status = archiveStatus(row);
-      return `<tr class="${row.archived ? "is-archived" : ""}"><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.department)}<small>${safeCell(row.position)}</small></td><td><span class="status ${status.className}">${status.text}</span>${row.archived ? "<small>已归档</small>" : `<div class="table-actions"><button class="table-action" data-edit-id="${safeCell(row.id)}">编辑</button><button class="table-action" data-archive-id="${safeCell(row.id)}">归档</button></div>`}</td></tr>`;
+      return `<tr class="${row.archived ? "is-archived" : ""}"><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.department)}<small>${safeCell(row.position)}</small></td><td><span class="status ${status.className}">${status.text}</span>${row.archived ? `<small>已归档</small><div class="table-actions"><button class="table-action" data-restore-id="${safeCell(row.id)}">恢复</button></div>` : `<div class="table-actions"><button class="table-action" data-edit-id="${safeCell(row.id)}">编辑</button><button class="table-action" data-archive-id="${safeCell(row.id)}">归档</button></div>`}</td></tr>`;
     }).join("");
     const contractRows = contracts.map((row) => {
       const status = contractStatus(row);
       return `<tr class="${row.archived ? "is-archived" : ""}"><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.endDate)}<small>剩余 ${status.remaining} 天</small></td><td><span class="status ${status.className}">${status.text}</span></td></tr>`;
     }).join("");
-    dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 入职档案与合同</div><h2 class="dialog-title">员工台账</h2><p>先用编号、姓名、部门或岗位定位记录，再根据状态处理。导入错误会按行提示，不会静默覆盖。</p><div class="ledger-toolbar"><input id="ledger-search" placeholder="搜索员工、部门或岗位" value="${safeCell(keyword)}" /><select id="ledger-status"><option value="all" ${statusFilter === "all" ? "selected" : ""}>全部状态</option><option value="pending" ${statusFilter === "pending" ? "selected" : ""}>档案待补充</option><option value="verify" ${statusFilter === "verify" ? "selected" : ""}>档案待核验</option><option value="window" ${statusFilter === "window" ? "selected" : ""}>合同提醒窗口</option><option value="expired" ${statusFilter === "expired" ? "selected" : ""}>合同已到期</option></select><label class="ledger-check"><input id="ledger-show-archived" type="checkbox" ${showArchived ? "checked" : ""} /> 显示已归档</label><button class="outline-button" id="ledger-add">新增员工 <span>＋</span></button></div><div class="ledger-section"><div class="ledger-heading"><strong>档案完整性 <span>${archive.length}/${workState.archiveRows.length}</span></strong><small>按员工逐行查看材料状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>部门/岗位</th><th>材料状态 / 操作</th></tr></thead><tbody>${archiveRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的档案记录</td></tr>`}</tbody></table></div></div><div class="ledger-section"><div class="ledger-heading"><strong>合同到期 <span>${contracts.length}/${workState.contractRows.length}</span></strong><small>根据结束日期和提醒天数计算</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>合同结束日</th><th>状态</th></tr></thead><tbody>${contractRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的合同记录</td></tr>`}</tbody></table></div></div><div class="ledger-actions"><button class="outline-button" id="ledger-rollback" ${workState.backups?.length ? "" : "disabled"}>回滚上次变更 <span>↶</span></button><button class="outline-button" id="ledger-export">导出当前 Excel <span>↓</span></button><button class="primary-button" id="ledger-close">完成查看 <span>×</span></button></div>`;
+    dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 入职档案与合同</div><h2 class="dialog-title">员工台账</h2><p>先用编号、姓名、部门或岗位定位记录，再根据状态处理。导入错误会按行提示，不会静默覆盖。</p><div class="ledger-link-summary"><strong>员工主记录关联：${linkSummary.linked}/${linkSummary.total}</strong><small>${linkSummary.unlinked.length ? `待关联：${linkSummary.unlinked.slice(0, 5).map((id) => safeCell(id)).join("、")}` : "档案和合同均已按员工编号关联"}</small></div><div class="ledger-toolbar"><input id="ledger-search" placeholder="搜索员工、部门或岗位" value="${safeCell(keyword)}" /><select id="ledger-status"><option value="all" ${statusFilter === "all" ? "selected" : ""}>全部状态</option><option value="pending" ${statusFilter === "pending" ? "selected" : ""}>档案待补充</option><option value="verify" ${statusFilter === "verify" ? "selected" : ""}>档案待核验</option><option value="window" ${statusFilter === "window" ? "selected" : ""}>合同提醒窗口</option><option value="expired" ${statusFilter === "expired" ? "selected" : ""}>合同已到期</option></select><label class="ledger-check"><input id="ledger-show-archived" type="checkbox" ${showArchived ? "checked" : ""} /> 显示已归档</label><button class="outline-button" id="ledger-add">新增员工 <span>＋</span></button><button class="outline-button" id="ledger-backups">备份历史 <span>↶</span></button></div><div class="ledger-section"><div class="ledger-heading"><strong>档案完整性 <span>${archive.length}/${workState.archiveRows.length}</span></strong><small>按员工逐行查看材料状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>部门/岗位</th><th>材料状态 / 操作</th></tr></thead><tbody>${archiveRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的档案记录</td></tr>`}</tbody></table></div></div><div class="ledger-section"><div class="ledger-heading"><strong>合同到期 <span>${contracts.length}/${workState.contractRows.length}</span></strong><small>根据结束日期和提醒天数计算</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>合同结束日</th><th>状态</th></tr></thead><tbody>${contractRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的合同记录</td></tr>`}</tbody></table></div></div><div class="ledger-actions"><button class="outline-button" id="ledger-rollback" ${workState.backups?.length ? "" : "disabled"}>回滚上次变更 <span>↶</span></button><button class="outline-button" id="ledger-export">导出当前 Excel <span>↓</span></button><button class="primary-button" id="ledger-close">完成查看 <span>×</span></button></div>`;
     document.querySelector("#ledger-search").addEventListener("input", (event) => { const value = event.target.value; render(value, document.querySelector("#ledger-status").value, document.querySelector("#ledger-show-archived").checked); const next = document.querySelector("#ledger-search"); next.focus(); next.setSelectionRange(value.length, value.length); });
     document.querySelector("#ledger-status").addEventListener("change", (event) => render(document.querySelector("#ledger-search").value, event.target.value, document.querySelector("#ledger-show-archived").checked));
     document.querySelector("#ledger-show-archived").addEventListener("change", (event) => render(document.querySelector("#ledger-search").value, document.querySelector("#ledger-status").value, event.target.checked));
     document.querySelector("#ledger-add").addEventListener("click", () => openEmployeeForm());
     document.querySelectorAll("[data-edit-id]").forEach((button) => button.addEventListener("click", () => openEmployeeForm(button.dataset.editId)));
     document.querySelectorAll("[data-archive-id]").forEach((button) => button.addEventListener("click", () => archiveEmployee(button.dataset.archiveId)));
+    document.querySelectorAll("[data-restore-id]").forEach((button) => button.addEventListener("click", () => restoreEmployee(button.dataset.restoreId)));
+    document.querySelector("#ledger-backups").addEventListener("click", openBackupManager);
     document.querySelector("#ledger-rollback").addEventListener("click", rollbackLastBackup);
     document.querySelector("#ledger-export").addEventListener("click", exportDemoXlsx);
     document.querySelector("#ledger-close").addEventListener("click", () => dialog.close());
