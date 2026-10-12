@@ -1,7 +1,7 @@
 const modules = [
   { id: "org", number: "01", icon: "⌘", name: "组织与岗位", description: "组织、编制、岗位和职责", tasks: ["梳理组织架构", "制作岗位说明书", "跟进编制与用人需求"] },
   { id: "recruit", number: "02", icon: "◎", name: "招聘与人才获取", description: "需求、筛选、面试和录用", tasks: ["发布招聘需求", "安排面试", "整理候选人信息"] },
-  { id: "onboard", number: "03", icon: "↗", name: "入职档案与合同", description: "入职、档案、合同和试用期", tasks: ["我要办入职", "检查入职资料", "跟进试用期转正"] },
+  { id: "onboard", number: "03", icon: "↗", name: "入职档案与合同", description: "入职、档案、合同和试用期", tasks: ["我要办入职", "检查档案完整性", "合同到期提醒", "办理合同续签", "跟进试用期转正"] },
   { id: "attendance", number: "04", icon: "◷", name: "考勤与假勤", description: "考勤、请假、加班和前置数据", tasks: ["处理考勤异常", "核对请假记录", "整理薪资前置数据"] },
   { id: "reward", number: "05", icon: "◇", name: "薪酬福利", description: "薪酬、社保、公积金和福利", tasks: ["核对薪酬数据", "办理社保公积金事项", "发放员工福利"] },
   { id: "talent", number: "06", icon: "✦", name: "绩效培训与发展", description: "绩效、培训和人才成长", tasks: ["组织培训", "跟进绩效周期", "整理培训反馈"] },
@@ -20,6 +20,39 @@ const onboardingDetail = {
     ["责任人", ["HR：发起、提醒、复核和归档；部门/直属上级：岗位导入与评价；行政/IT：条件准备；员工：提交材料并反馈"]],
     ["模块内 AI 辅助", ["可让 AI 根据岗位和入职日期生成待办清单、缺失项提醒和沟通草稿；涉及劳动合同、工资、社保、假勤或解除终止时，只能辅助整理，必须按所在地最新政策和公司制度复核。"]],
   ],
+};
+
+const taskDetails = {
+  "检查档案完整性": {
+    kicker: "TASK 03 · 档案管理",
+    title: "检查档案完整性",
+    intro: "快速确认某名员工缺哪些材料、谁来补、是否已经核验和归档。",
+    sections: [
+      ["检查顺序", ["先核对员工主记录：姓名、工号、部门、岗位和入职日期", "再检查入职、劳动关系、在职过程、离职归档四类材料", "对缺失项标记负责人、截止时间和补交状态"]],
+      ["不要这样做", ["不把身份证、电话、住址、薪资等真实信息放入公开演示数据", "不把所有材料都默认成每名员工必交，岗位和法律要求不同要单独标注"]],
+      ["模块内 AI 辅助", ["可根据岗位和员工状态生成缺失项清单、催办消息和归档目录；涉及材料必要性时要求 AI 标注依据并由 HR 复核。"]],
+    ],
+  },
+  "合同到期提醒": {
+    kicker: "TASK 03 · 合同台账",
+    title: "合同到期提醒",
+    intro: "把合同开始日、结束日、提醒窗口和责任人放在同一条记录里，避免只记得日期却没人处理。",
+    sections: [
+      ["需要录入", ["员工/工号、部门、岗位、合同编号、合同类型", "合同开始日、结束日或期限、提醒提前天数", "当前状态、责任人、处理记录和证据链接"]],
+      ["提醒逻辑", ["正常 → 预提醒 → 待处理 → 临近到期 → 已到期", "提醒只负责把事项推到 HR 面前，不自动判断是否续签或终止"]],
+      ["模块内 AI 辅助", ["可根据即将到期清单生成部门征询、员工沟通和内部跟进草稿；合同期限、通知期限和法律后果必须按最新政策复核。"]],
+    ],
+  },
+  "办理合同续签": {
+    kicker: "TASK 03 · 合同续签",
+    title: "办理合同续签",
+    intro: "将部门意见、员工意向、HR 复核、审批、签署和归档串成一条可追踪记录。",
+    sections: [
+      ["标准路径", ["核对合同信息和员工状态 → 征询部门意见 → 征询员工意向 → 形成审批记录 → 签署/送达 → 更新台账和档案"]],
+      ["关键留痕", ["保留通知、意见、协商、审批、签收和合同文件状态；不要只记录最终的“续签/不续签”结果"]],
+      ["风险提示", ["资料中的续签提前天数和逾期后果存在不同口径，工作台将其设为可配置项，不把旧资料中的固定期限直接当成通用规则。"]],
+    ],
+  },
 };
 
 const moduleGrid = document.querySelector("#module-grid");
@@ -74,6 +107,12 @@ function renderTasks(query = "", moduleId = "") {
 function openTask(title) {
   if (title === "我要办入职" || title === "onboarding") {
     dialogContent.innerHTML = `<div class="dialog-kicker">${onboardingDetail.kicker}</div><h2 class="dialog-title">${onboardingDetail.title}</h2><p>${onboardingDetail.intro}</p>${onboardingDetail.sections.map(([heading, items]) => `<div class="dialog-section"><h4>${heading}</h4><ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul></div>`).join("")}<button class="primary-button" style="margin-top:22px" onclick="document.querySelector('#task-dialog').close()">先记下这个流程 <span>✓</span></button>`;
+    dialog.showModal();
+    return;
+  }
+  if (taskDetails[title]) {
+    const detail = taskDetails[title];
+    dialogContent.innerHTML = `<div class="dialog-kicker">${detail.kicker}</div><h2 class="dialog-title">${detail.title}</h2><p>${detail.intro}</p>${detail.sections.map(([heading, items]) => `<div class="dialog-section"><h4>${heading}</h4><ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul></div>`).join("")}<button class="primary-button" style="margin-top:22px" onclick="document.querySelector('#task-dialog').close()">先记下这个流程 <span>✓</span></button>`;
     dialog.showModal();
     return;
   }
