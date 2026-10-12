@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="2026HRworkbench 综合HR轻量化事务工作台公开版原型" />
+  <title>2026 HR Workbench</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="brand-block">
+        <div class="brand-mark">HR</div>
+        <div>
+          <div class="brand-name">HR Workbench</div>
+          <div class="brand-subtitle">综合HR事务工作台</div>
+        </div>
+      </div>
+
+      <nav class="nav-list">
+        <button class="nav-item is-active" data-target="home"><span>⌂</span>工作台首页</button>
+        <button class="nav-item" data-target="modules"><span>▦</span>八大模块</button>
+        <button class="nav-item" data-target="tools"><span>⌘</span>常用工具</button>
+        <button class="nav-item" data-target="ai"><span>✦</span>AI辅助入口</button>
+        <button class="nav-item" data-target="portfolio"><span>◫</span>作品集</button>
+      </nav>
+
+      <div class="sidebar-note">
+        <span class="status-dot"></span>
+        <div>
+          <strong>公开版原型</strong>
+          <small>内容持续补充中</small>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb">2026 HR Workbench <span>/</span> 公开版</div>
+        <div class="topbar-actions">
+          <button class="icon-button" title="切换显示模式" aria-label="切换显示模式">◐</button>
+          <button class="avatar" title="当前工作模式" aria-label="当前工作模式">R</button>
+        </div>
+      </header>
+
+      <section id="home" class="page-section hero-section">
+        <div class="hero-copy">
+          <p class="eyebrow">TASK-FIRST HR TOOLKIT</p>
+          <h1>今天要处理什么？</h1>
+          <p class="hero-description">从一个具体任务开始，直接找到流程、模板、工具和需要复核的风险点。</p>
+          <label class="search-box" for="global-search">
+            <span>⌕</span>
+            <input id="global-search" type="search" placeholder="搜索任务、流程、模板或关键词" autocomplete="off" />
+            <kbd>⌘ K</kbd>
+          </label>
+          <div class="quick-tags" aria-label="快捷任务">
+            <button data-search="入职">我要办入职</button>
+            <button data-search="考勤">我要处理考勤</button>
+            <button data-search="合同">我要跟进合同</button>
+            <button data-search="招聘">我要做招聘</button>
+          </div>
+        </div>
+        <div class="hero-aside">
+          <div class="focus-card">
+            <div class="focus-card-top"><span class="tag tag-accent">推荐先试</span><span class="muted">01</span></div>
+            <h2>入职办理闭环</h2>
+            <p>从入职前准备到档案留痕，一次走完工作台的基本模式。</p>
+            <button class="primary-button" data-task="onboarding">打开任务 <span>→</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section id="modules" class="page-section">
+        <div class="section-heading">
+          <div><p class="eyebrow">HR OPERATIONS</p><h2>八大业务模块</h2></div>
+          <button class="text-button" id="show-all">查看全部任务 <span>→</span></button>
+        </div>
+        <div id="module-grid" class="module-grid"></div>
+      </section>
+
+      <section class="page-section split-section">
+        <div class="panel" id="task-panel">
+          <div class="section-heading compact"><div><p class="eyebrow">TASK LIBRARY</p><h2>常用任务</h2></div><span id="task-count" class="count-label"></span></div>
+          <div id="task-list" class="task-list"></div>
+          <div id="empty-state" class="empty-state" hidden>没有找到匹配任务，试试换个关键词。</div>
+        </div>
+        <div class="panel ai-preview" id="ai">
+          <div class="section-heading compact"><div><p class="eyebrow">AI INSIDE THE TASK</p><h2>模块内AI辅助</h2></div><span class="tag tag-soft">按需调用</span></div>
+          <div class="ai-flow">
+            <div class="ai-step"><span>01</span><strong>先判断任务</strong><small>不是所有事情都需要AI</small></div>
+            <div class="ai-arrow">↓</div>
+            <div class="ai-step"><span>02</span><strong>复制提示词</strong><small>带着必要资料去处理</small></div>
+            <div class="ai-arrow">↓</div>
+            <div class="ai-step"><span>03</span><strong>回到流程复核</strong><small>结果不能直接代替判断</small></div>
+          </div>
+          <button class="outline-button" data-target="ai">查看AI使用说明 <span>→</span></button>
+        </div>
+      </section>
+
+      <section id="tools" class="page-section">
+        <div class="section-heading"><div><p class="eyebrow">SMALL TOOLS, REAL TIME SAVED</p><h2>常用工具</h2></div></div>
+        <div class="tool-grid">
+          <article class="tool-card"><div class="tool-icon">ƒ</div><div><h3>HR Excel函数</h3><p>从筛选、排序开始，逐步补齐人事常用公式。</p></div><span>待补充</span></article>
+          <article class="tool-card"><div class="tool-icon">✓</div><div><h3>资料完整性检查</h3><p>按任务核对入职、合同和档案材料是否齐全。</p></div><span>原型中</span></article>
+          <article class="tool-card"><div class="tool-icon">↗</div><div><h3>日期与提醒</h3><p>试用期、合同到期和培训节点的提醒入口。</p></div><span>待补充</span></article>
+        </div>
+      </section>
+
+      <section id="portfolio" class="page-section portfolio-placeholder">
+        <div><p class="eyebrow">PORTFOLIO</p><h2>作品集入口</h2><p>这里先保留位置。工作台的核心仍然是实际使用，而不是展示页面。</p></div>
+        <span class="tag tag-outline">内容暂不展开</span>
+      </section>
+
+      <footer class="site-footer"><span>2026 HR Workbench</span><span>公开版 · 持续迭代</span></footer>
+    </main>
+  </div>
+
+  <dialog id="task-dialog" class="task-dialog">
+    <button class="dialog-close" id="dialog-close" aria-label="关闭">×</button>
+    <div id="dialog-content"></div>
+  </dialog>
+  <script src="app.js"></script>
+</body>
+</html>
+
