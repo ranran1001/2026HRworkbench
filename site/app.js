@@ -69,13 +69,14 @@ const defaultWorkState = {
     { id: "DEMO-002", name: "员工002", department: "技术部", position: "IT专员", startDate: "2026-09-15", endDate: "2028-04-01", days: 60, note: "" },
     { id: "DEMO-003", name: "员工003", department: "综合部", position: "HR专员", startDate: "2026-10-08", endDate: "2026-11-15", days: 30, note: "待补充合同扫描件" },
   ],
+  backups: [],
   queue: { archive: { text: "待补充", className: "status-warn" }, contract: { text: "待处理", className: "status-info" } },
 };
 
 function loadWorkState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return saved ? { ...defaultWorkState, ...saved, archive: { ...defaultWorkState.archive, ...saved.archive }, contract: { ...defaultWorkState.contract, ...saved.contract }, archiveRows: saved.archiveRows || structuredClone(defaultWorkState.archiveRows), contractRows: saved.contractRows || structuredClone(defaultWorkState.contractRows), queue: { ...defaultWorkState.queue, ...saved.queue } } : structuredClone(defaultWorkState);
+    return saved ? { ...defaultWorkState, ...saved, archive: { ...defaultWorkState.archive, ...saved.archive }, contract: { ...defaultWorkState.contract, ...saved.contract }, archiveRows: saved.archiveRows || structuredClone(defaultWorkState.archiveRows), contractRows: saved.contractRows || structuredClone(defaultWorkState.contractRows), backups: saved.backups || [], queue: { ...defaultWorkState.queue, ...saved.queue } } : structuredClone(defaultWorkState);
   } catch (error) {
     return structuredClone(defaultWorkState);
   }
@@ -85,6 +86,21 @@ let workState = loadWorkState();
 
 function saveWorkState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(workState));
+}
+
+function createWorkStateBackup(reason) {
+  const snapshot = { archive: structuredClone(workState.archive), contract: structuredClone(workState.contract), archiveRows: structuredClone(workState.archiveRows), contractRows: structuredClone(workState.contractRows), queue: structuredClone(workState.queue), reason, createdAt: new Date().toLocaleString("zh-CN") };
+  workState.backups = [snapshot, ...(workState.backups || [])].slice(0, 5);
+}
+
+function rollbackLastBackup() {
+  const backup = workState.backups?.[0];
+  if (!backup) return;
+  const backups = workState.backups.slice(1);
+  workState = { ...workState, archive: backup.archive, contract: backup.contract, archiveRows: backup.archiveRows, contractRows: backup.contractRows, queue: backup.queue, backups };
+  saveWorkState();
+  applyQueueState();
+  openLedgerTool();
 }
 
 function csvEscape(value) {
@@ -204,6 +220,7 @@ function importDemoXlsx(file) {
         }
       });
       if (errors.length) throw new Error(errors.slice(0, 8).join("；") + (errors.length > 8 ? `；另有 ${errors.length - 8} 条错误` : ""));
+      createWorkStateBackup("Excel 导入");
       if (imported.archiveRows) workState.archiveRows = imported.archiveRows;
       if (imported.contractRows) workState.contractRows = imported.contractRows;
       if (workState.archiveRows[0]) workState.archive = { employee: workState.archiveRows[0].name, department: workState.archiveRows[0].department, entry: workState.archiveRows[0].entry, identity: workState.archiveRows[0].identity, education: workState.archiveRows[0].education, contract: workState.archiveRows[0].contract, training: workState.archiveRows[0].training };
@@ -295,26 +312,83 @@ function safeCell(value) {
 }
 
 function openLedgerTool() {
-  const render = (keyword = "", statusFilter = "all") => {
+  const render = (keyword = "", statusFilter = "all", showArchived = false) => {
     const query = keyword.trim().toLowerCase();
     const archive = workState.archiveRows.filter((row) => {
       const status = archiveStatus(row).text;
       const matchesText = !query || [row.id, row.name, row.department, row.position].join(" ").toLowerCase().includes(query);
-      return matchesText && (statusFilter === "all" || (statusFilter === "pending" && status.includes("待补充")) || (statusFilter === "verify" && status === "待核验"));
+      const matchesArchive = showArchived || !row.archived;
+      return matchesArchive && matchesText && (statusFilter === "all" || (statusFilter === "pending" && status.includes("待补充")) || (statusFilter === "verify" && status === "待核验"));
     });
     const contracts = workState.contractRows.filter((row) => {
       const status = contractStatus(row);
       const matchesText = !query || [row.id, row.name, row.department, row.position].join(" ").toLowerCase().includes(query);
-      return matchesText && (statusFilter === "all" || (statusFilter === "expired" && status.text === "已到期") || (statusFilter === "window" && status.text === "进入提醒窗口"));
+      const matchesArchive = showArchived || !row.archived;
+      return matchesArchive && matchesText && (statusFilter === "all" || (statusFilter === "expired" && status.text === "已到期") || (statusFilter === "window" && status.text === "进入提醒窗口"));
     });
-    dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 入职档案与合同</div><h2 class="dialog-title">员工台账</h2><p>先用编号、姓名、部门或岗位定位记录，再根据状态处理。导入错误会按行提示，不会静默覆盖。</p><div class="ledger-toolbar"><input id="ledger-search" placeholder="搜索员工、部门或岗位" value="${safeCell(keyword)}" /><select id="ledger-status"><option value="all" ${statusFilter === "all" ? "selected" : ""}>全部状态</option><option value="pending" ${statusFilter === "pending" ? "selected" : ""}>档案待补充</option><option value="verify" ${statusFilter === "verify" ? "selected" : ""}>档案待核验</option><option value="window" ${statusFilter === "window" ? "selected" : ""}>合同提醒窗口</option><option value="expired" ${statusFilter === "expired" ? "selected" : ""}>合同已到期</option></select></div><div class="ledger-section"><div class="ledger-heading"><strong>档案完整性 <span>${archive.length}/${workState.archiveRows.length}</span></strong><small>按员工逐行查看材料状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>部门/岗位</th><th>材料状态</th></tr></thead><tbody>${archive.map((row) => { const status = archiveStatus(row); return `<tr><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.department)}<small>${safeCell(row.position)}</small></td><td><span class="status ${status.className}">${status.text}</span></td></tr>`; }).join("") || `<tr><td colspan="3" class="ledger-empty">没有匹配的档案记录</td></tr>`}</tbody></table></div></div><div class="ledger-section"><div class="ledger-heading"><strong>合同到期 <span>${contracts.length}/${workState.contractRows.length}</span></strong><small>根据结束日期和提醒天数计算</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>合同结束日</th><th>状态</th></tr></thead><tbody>${contracts.map((row) => { const status = contractStatus(row); return `<tr><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.endDate)}<small>剩余 ${status.remaining} 天</small></td><td><span class="status ${status.className}">${status.text}</span></td></tr>`; }).join("") || `<tr><td colspan="3" class="ledger-empty">没有匹配的合同记录</td></tr>`}</tbody></table></div></div><div class="ledger-actions"><button class="outline-button" id="ledger-export">导出当前 Excel <span>↓</span></button><button class="primary-button" id="ledger-close">完成查看 <span>×</span></button></div>`;
-    document.querySelector("#ledger-search").addEventListener("input", (event) => { const value = event.target.value; render(value, document.querySelector("#ledger-status").value); const next = document.querySelector("#ledger-search"); next.focus(); next.setSelectionRange(value.length, value.length); });
-    document.querySelector("#ledger-status").addEventListener("change", (event) => render(document.querySelector("#ledger-search").value, event.target.value));
+    const archiveRows = archive.map((row) => {
+      const status = archiveStatus(row);
+      return `<tr class="${row.archived ? "is-archived" : ""}"><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.department)}<small>${safeCell(row.position)}</small></td><td><span class="status ${status.className}">${status.text}</span>${row.archived ? "<small>已归档</small>" : `<div class="table-actions"><button class="table-action" data-edit-id="${safeCell(row.id)}">编辑</button><button class="table-action" data-archive-id="${safeCell(row.id)}">归档</button></div>`}</td></tr>`;
+    }).join("");
+    const contractRows = contracts.map((row) => {
+      const status = contractStatus(row);
+      return `<tr class="${row.archived ? "is-archived" : ""}"><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.endDate)}<small>剩余 ${status.remaining} 天</small></td><td><span class="status ${status.className}">${status.text}</span></td></tr>`;
+    }).join("");
+    dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 入职档案与合同</div><h2 class="dialog-title">员工台账</h2><p>先用编号、姓名、部门或岗位定位记录，再根据状态处理。导入错误会按行提示，不会静默覆盖。</p><div class="ledger-toolbar"><input id="ledger-search" placeholder="搜索员工、部门或岗位" value="${safeCell(keyword)}" /><select id="ledger-status"><option value="all" ${statusFilter === "all" ? "selected" : ""}>全部状态</option><option value="pending" ${statusFilter === "pending" ? "selected" : ""}>档案待补充</option><option value="verify" ${statusFilter === "verify" ? "selected" : ""}>档案待核验</option><option value="window" ${statusFilter === "window" ? "selected" : ""}>合同提醒窗口</option><option value="expired" ${statusFilter === "expired" ? "selected" : ""}>合同已到期</option></select><label class="ledger-check"><input id="ledger-show-archived" type="checkbox" ${showArchived ? "checked" : ""} /> 显示已归档</label><button class="outline-button" id="ledger-add">新增员工 <span>＋</span></button></div><div class="ledger-section"><div class="ledger-heading"><strong>档案完整性 <span>${archive.length}/${workState.archiveRows.length}</span></strong><small>按员工逐行查看材料状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>部门/岗位</th><th>材料状态 / 操作</th></tr></thead><tbody>${archiveRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的档案记录</td></tr>`}</tbody></table></div></div><div class="ledger-section"><div class="ledger-heading"><strong>合同到期 <span>${contracts.length}/${workState.contractRows.length}</span></strong><small>根据结束日期和提醒天数计算</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>合同结束日</th><th>状态</th></tr></thead><tbody>${contractRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的合同记录</td></tr>`}</tbody></table></div></div><div class="ledger-actions"><button class="outline-button" id="ledger-rollback" ${workState.backups?.length ? "" : "disabled"}>回滚上次变更 <span>↶</span></button><button class="outline-button" id="ledger-export">导出当前 Excel <span>↓</span></button><button class="primary-button" id="ledger-close">完成查看 <span>×</span></button></div>`;
+    document.querySelector("#ledger-search").addEventListener("input", (event) => { const value = event.target.value; render(value, document.querySelector("#ledger-status").value, document.querySelector("#ledger-show-archived").checked); const next = document.querySelector("#ledger-search"); next.focus(); next.setSelectionRange(value.length, value.length); });
+    document.querySelector("#ledger-status").addEventListener("change", (event) => render(document.querySelector("#ledger-search").value, event.target.value, document.querySelector("#ledger-show-archived").checked));
+    document.querySelector("#ledger-show-archived").addEventListener("change", (event) => render(document.querySelector("#ledger-search").value, document.querySelector("#ledger-status").value, event.target.checked));
+    document.querySelector("#ledger-add").addEventListener("click", () => openEmployeeForm());
+    document.querySelectorAll("[data-edit-id]").forEach((button) => button.addEventListener("click", () => openEmployeeForm(button.dataset.editId)));
+    document.querySelectorAll("[data-archive-id]").forEach((button) => button.addEventListener("click", () => archiveEmployee(button.dataset.archiveId)));
+    document.querySelector("#ledger-rollback").addEventListener("click", rollbackLastBackup);
     document.querySelector("#ledger-export").addEventListener("click", exportDemoXlsx);
     document.querySelector("#ledger-close").addEventListener("click", () => dialog.close());
   };
   render();
   dialog.showModal();
+}
+
+function openEmployeeForm(id = "") {
+  const archive = workState.archiveRows.find((row) => row.id === id);
+  const contract = workState.contractRows.find((row) => row.id === id);
+  const editing = Boolean(archive || contract);
+  const a = archive || { id: "", name: "", department: "", position: "", entryDate: "", entry: true, identity: false, education: false, contract: false, training: false };
+  const c = contract || { startDate: a.entryDate || "", endDate: "", days: 30, note: "" };
+  dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · ${editing ? "编辑员工" : "新增员工"}</div><h2 class="dialog-title">${editing ? "编辑员工记录" : "新增员工记录"}</h2><p>员工编号是档案和合同的关联键，保存前会检查是否重复。</p><form id="employee-form" class="mini-tool-form ledger-form"><div class="form-two-col"><label>员工编号<input name="id" value="${safeCell(a.id)}" required ${editing ? "readonly" : ""} /></label><label>员工姓名<input name="name" value="${safeCell(a.name)}" required /></label></div><div class="form-two-col"><label>部门<input name="department" value="${safeCell(a.department)}" required /></label><label>岗位<input name="position" value="${safeCell(a.position)}" /></label></div><div class="form-two-col"><label>入职日期<input name="entryDate" type="date" value="${safeCell(a.entryDate)}" /></label><label>合同结束日期<input name="endDate" type="date" value="${safeCell(c.endDate)}" required /></label></div><div class="form-two-col"><label>提前提醒天数<input name="days" type="number" min="0" value="${Number(c.days) || 30}" required /></label><label>处理备注<input name="note" value="${safeCell(c.note)}" /></label></div><fieldset><legend>档案材料状态</legend><label class="check-row"><input type="checkbox" name="entry" ${a.entry ? "checked" : ""} /> 入职登记</label><label class="check-row"><input type="checkbox" name="identity" ${a.identity ? "checked" : ""} /> 身份证明</label><label class="check-row"><input type="checkbox" name="education" ${a.education ? "checked" : ""} /> 学历/资格材料</label><label class="check-row"><input type="checkbox" name="contract" ${a.contract ? "checked" : ""} /> 劳动合同</label><label class="check-row"><input type="checkbox" name="training" ${a.training ? "checked" : ""} /> 培训/试用期记录</label></fieldset><div class="ledger-actions"><button class="outline-button" type="button" id="employee-cancel">取消</button><button class="primary-button" type="submit">保存记录 <span>✓</span></button></div></form>`;
+  document.querySelector("#employee-cancel").addEventListener("click", openLedgerTool);
+  document.querySelector("#employee-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const employeeId = String(form.get("id") || "").trim();
+    if (!employeeId || (!editing && workState.archiveRows.some((row) => row.id === employeeId))) {
+      dialogContent.insertAdjacentHTML("afterbegin", `<div class="tool-result"><strong>保存失败</strong><p>员工编号不能为空，且不能与现有编号重复。</p></div>`);
+      return;
+    }
+    createWorkStateBackup(editing ? "编辑员工" : "新增员工");
+    const archiveRow = { id: employeeId, name: String(form.get("name") || "").trim(), department: String(form.get("department") || "").trim(), position: String(form.get("position") || "").trim(), entryDate: String(form.get("entryDate") || ""), entry: Boolean(form.get("entry")), identity: Boolean(form.get("identity")), education: Boolean(form.get("education")), contract: Boolean(form.get("contract")), training: Boolean(form.get("training")), archived: false };
+    const contractRow = { id: employeeId, name: archiveRow.name, department: archiveRow.department, position: archiveRow.position, startDate: archiveRow.entryDate, endDate: String(form.get("endDate") || ""), days: Number(form.get("days")) || 30, note: String(form.get("note") || "").trim(), archived: false };
+    if (editing) {
+      workState.archiveRows = workState.archiveRows.map((row) => row.id === employeeId ? archiveRow : row);
+      workState.contractRows = workState.contractRows.map((row) => row.id === employeeId ? contractRow : row);
+    } else {
+      workState.archiveRows.push(archiveRow);
+      workState.contractRows.push(contractRow);
+    }
+    workState.archive = { employee: archiveRow.name, department: archiveRow.department, entry: archiveRow.entry, identity: archiveRow.identity, education: archiveRow.education, contract: archiveRow.contract, training: archiveRow.training };
+    workState.contract = { employee: contractRow.name, endDate: contractRow.endDate, days: contractRow.days };
+    saveWorkState();
+    openLedgerTool();
+  });
+  dialog.showModal();
+}
+
+function archiveEmployee(id) {
+  createWorkStateBackup("归档员工");
+  workState.archiveRows = workState.archiveRows.map((row) => row.id === id ? { ...row, archived: true } : row);
+  workState.contractRows = workState.contractRows.map((row) => row.id === id ? { ...row, archived: true } : row);
+  saveWorkState();
+  openLedgerTool();
 }
 
 const moduleGrid = document.querySelector("#module-grid");
