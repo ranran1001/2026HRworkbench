@@ -1,10 +1,9 @@
 ---
-name: universal-workbench-builder
+name: Workbench-builder-universal
 description: Design, build, test, package, and hand off lightweight practical workbenches for any domain, with portability, modularity, data safety, versioning, and browser acceptance as non-negotiable delivery requirements.
 ---
 
-# Universal Workbench Builder
-
+# Workbench Builder Universal
 Use this skill when building or substantially changing a practical workbench, dashboard, internal tool, portal, tracker, or domain-specific task system. The domain may be HR, weather, finance, operations, research, education, or another field.
 
 The workbench is a tool for completing work. Explanations, knowledge cards, and portfolios are supporting layers, not the main product.
