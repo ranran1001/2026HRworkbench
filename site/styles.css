@@ -136,9 +136,10 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .data-transfer { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 14px; padding: 18px 20px; background: #fffaf7; }
 .data-transfer h3 { margin-bottom: 4px; font-size: 15px; }
 .data-transfer p:not(.eyebrow) { margin: 0; color: var(--ink-soft); font-size: 11px; }
-.data-actions { display: flex; align-items: center; gap: 8px; min-width: 190px; }
+.data-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; min-width: 190px; }
 .data-actions .outline-button { width: auto; min-width: 112px; }
 .file-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 112px; padding: 10px 12px; border: 1px solid #dbc7bf; border-radius: var(--radius-sm); color: var(--accent-deep); background: transparent; font-size: 12px; font-weight: 700; cursor: pointer; }
+.file-button { text-decoration: none; }
 .file-button:hover { background: var(--accent-soft); }
 .file-button input { display: none; }
 .portfolio-placeholder { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px; background: #fffbf8; }
