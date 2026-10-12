@@ -148,6 +148,7 @@ document.querySelector("#show-all").addEventListener("click", () => {
   document.querySelector("#task-panel").scrollIntoView({ behavior: "smooth", block: "center" });
 });
 document.querySelector("[data-task='onboarding']").addEventListener("click", () => openTask("onboarding"));
+document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
 document.querySelector("#dialog-close").addEventListener("click", () => dialog.close());
 dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
 document.addEventListener("keydown", (event) => {
