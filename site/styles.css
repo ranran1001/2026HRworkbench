@@ -170,6 +170,9 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .ledger-toolbar { display: grid; grid-template-columns: 1fr 150px; gap: 8px; margin: 18px 0; }
 .ledger-toolbar input, .ledger-toolbar select { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; outline: 0; color: var(--ink); background: var(--surface-soft); font-size: 12px; }
 .ledger-toolbar input:focus, .ledger-toolbar select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.ledger-toolbar .outline-button { width: auto; min-width: 108px; }
+.ledger-check { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 10px; white-space: nowrap; }
+.ledger-check input { accent-color: var(--accent); }
 .ledger-section { margin-top: 18px; }
 .ledger-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
 .ledger-heading strong { font-size: 12px; }
@@ -180,9 +183,20 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .ledger-table th, .ledger-table td { padding: 9px 10px; border-bottom: 1px solid #eff2f4; text-align: left; vertical-align: middle; }
 .ledger-table th { color: var(--muted); background: var(--surface-soft); font-size: 10px; font-weight: 600; }
 .ledger-table tr:last-child td { border-bottom: 0; }
+.ledger-table tr.is-archived { opacity: .58; }
 .ledger-table td strong, .ledger-table td small { display: block; }
 .ledger-table td small { margin-top: 3px; color: var(--muted); font-size: 10px; }
 .ledger-empty { color: var(--muted); text-align: center !important; }
+.table-actions { display: flex; gap: 8px; margin-top: 6px; }
+.table-action { padding: 0; border: 0; background: transparent; color: var(--accent-deep); font-size: 10px; font-weight: 700; cursor: pointer; }
+.table-action:hover { text-decoration: underline; }
+.ledger-form { margin-top: 16px; }
+.form-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ledger-form > label, .ledger-form .form-two-col > label { display: grid; gap: 5px; color: var(--ink-soft); font-size: 11px; font-weight: 700; }
+.ledger-form input:not([type="checkbox"]) { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; outline: 0; color: var(--ink); background: var(--surface-soft); font-size: 12px; }
+.ledger-form input:read-only { color: var(--muted); background: #f2f3f2; }
+.ledger-form input:not([type="checkbox"]):focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.ledger-actions button:disabled { cursor: not-allowed; opacity: .45; }
 .ledger-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 .ledger-actions .outline-button, .ledger-actions .primary-button { width: auto; min-width: 116px; }
 
@@ -214,6 +228,7 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
   .data-transfer { align-items: flex-start; flex-direction: column; }
   .data-actions { width: 100%; }
   .ledger-toolbar { grid-template-columns: 1fr; }
+  .form-two-col { grid-template-columns: 1fr; }
   .ledger-actions { flex-direction: column; }
   .ledger-actions .outline-button, .ledger-actions .primary-button { width: 100%; }
   .site-footer { gap: 5px; }
