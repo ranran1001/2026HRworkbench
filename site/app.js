@@ -55,6 +55,45 @@ const taskDetails = {
   },
 };
 
+function renderInteractiveTool(title) {
+  if (title === "检查档案完整性") {
+    return `<div class="dialog-kicker">TASK TOOL · 档案检查</div><h2 class="dialog-title">检查档案完整性</h2><p>填写一名员工的示例资料状态，系统会生成缺失项和下一步处理建议。</p><form id="archive-check-form" class="mini-tool-form"><label>员工姓名<input name="employee" value="员工001" required /></label><label>部门<input name="department" value="市场部" required /></label><fieldset><legend>材料状态</legend><label class="check-row"><input type="checkbox" name="entry" checked /> 入职登记</label><label class="check-row"><input type="checkbox" name="identity" checked /> 身份证明</label><label class="check-row"><input type="checkbox" name="education" /> 学历/资格材料</label><label class="check-row"><input type="checkbox" name="contract" checked /> 劳动合同</label><label class="check-row"><input type="checkbox" name="training" /> 培训/试用期记录</label></fieldset><button class="primary-button" type="submit">生成检查结果 <span>→</span></button></form><div id="archive-result" class="tool-result" hidden></div>`;
+  }
+  if (title === "合同到期提醒") {
+    return `<div class="dialog-kicker">TASK TOOL · 合同台账</div><h2 class="dialog-title">合同到期提醒</h2><p>根据合同结束日期和提醒提前天数，生成提醒状态。结果只用于辅助核对，不自动做续签或终止判断。</p><form id="contract-reminder-form" class="mini-tool-form"><label>员工姓名<input name="employee" value="员工002" required /></label><label>合同结束日期<input name="endDate" type="date" value="2026-10-20" required /></label><label>提前提醒天数<input name="days" type="number" value="30" min="0" required /></label><button class="primary-button" type="submit">计算提醒状态 <span>→</span></button></form><div id="contract-result" class="tool-result" hidden></div>`;
+  }
+  return "";
+}
+
+function bindInteractiveTool(title) {
+  if (title === "检查档案完整性") {
+    document.querySelector("#archive-check-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const labels = { entry: "入职登记", identity: "身份证明", education: "学历/资格材料", contract: "劳动合同", training: "培训/试用期记录" };
+      const missing = Object.entries(labels).filter(([key]) => !form.get(key)).map(([, label]) => label);
+      const name = form.get("employee");
+      const result = document.querySelector("#archive-result");
+      result.hidden = false;
+      result.innerHTML = missing.length ? `<strong>${name}：发现 ${missing.length} 项待补充</strong><p>${missing.join("、")}</p><small>建议：指定责任人和截止时间后再标记为已归档。</small>` : `<strong>${name}：当前清单已齐全</strong><p>仍需要由 HR 完成原件核验、归档位置登记和最后更新时间记录。</p>`;
+    });
+  }
+  if (title === "合同到期提醒") {
+    document.querySelector("#contract-reminder-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const form = new FormData(event.currentTarget);
+      const end = new Date(`${form.get("endDate")}T00:00:00`);
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const remaining = Math.ceil((end - today) / 86400000);
+      const days = Number(form.get("days"));
+      const status = remaining < 0 ? "已到期" : remaining <= days ? "进入提醒窗口" : "暂未到提醒窗口";
+      const result = document.querySelector("#contract-result");
+      result.hidden = false;
+      result.innerHTML = `<strong>${form.get("employee")}：${status}</strong><p>合同结束日：${form.get("endDate")} · 剩余 ${remaining} 天 · 提前 ${days} 天提醒</p><small>下一步：核对合同台账、部门意见和员工意向；不要仅凭公式自动决定续签或终止。</small>`;
+    });
+  }
+}
+
 const moduleGrid = document.querySelector("#module-grid");
 const taskList = document.querySelector("#task-list");
 const taskCount = document.querySelector("#task-count");
@@ -108,6 +147,13 @@ function openTask(title) {
   if (title === "我要办入职" || title === "onboarding") {
     dialogContent.innerHTML = `<div class="dialog-kicker">${onboardingDetail.kicker}</div><h2 class="dialog-title">${onboardingDetail.title}</h2><p>${onboardingDetail.intro}</p>${onboardingDetail.sections.map(([heading, items]) => `<div class="dialog-section"><h4>${heading}</h4><ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul></div>`).join("")}<button class="primary-button" style="margin-top:22px" onclick="document.querySelector('#task-dialog').close()">先记下这个流程 <span>✓</span></button>`;
     dialog.showModal();
+    return;
+  }
+  const interactiveTool = renderInteractiveTool(title);
+  if (interactiveTool) {
+    dialogContent.innerHTML = `${interactiveTool}<button class="outline-button" style="margin-top:16px" onclick="document.querySelector('#task-dialog').close()">关闭工具</button>`;
+    dialog.showModal();
+    bindInteractiveTool(title);
     return;
   }
   if (taskDetails[title]) {
