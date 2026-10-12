@@ -1,0 +1,26 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+credentials/
+
+# Dependencies and generated files
+node_modules/
+.cache/
+coverage/
+dist/
+
+# Local source materials and private notes
+raw-materials/
+private-materials/
+personal-notes/
+original-files/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
