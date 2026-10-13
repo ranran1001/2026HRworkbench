@@ -308,6 +308,12 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .portfolio-page figcaption { padding: 6px 0 8px; color: var(--ink-soft); font-size: 10px; }
 .portfolio-custom-note { display: grid; gap: 8px; margin: 18px 0; padding: 18px; border: 1px dashed var(--line); border-radius: 12px; color: var(--ink-soft); background: var(--surface-soft); font-size: 12px; }
 .portfolio-custom-note strong { color: var(--ink); font-size: 13px; }
+.module-ai-assist { margin: 18px 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #f7faf8; }
+.module-ai-assist summary { color: var(--ink); font-size: 13px; font-weight: 700; cursor: pointer; }
+.module-ai-assist > p { margin: 10px 0; color: var(--ink-soft); font-size: 12px; }
+.module-ai-prompt { display: block; width: 100%; min-height: 170px; resize: vertical; padding: 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: #fff; font: 12px/1.65 ui-monospace, "Cascadia Code", Consolas, monospace; }
+.module-ai-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+.module-ai-copy-status { color: var(--ink-soft); font-size: 11px; }
 @media (max-width: 680px) {
   .portfolio-panel { padding: 18px; }
   .portfolio-actions { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }

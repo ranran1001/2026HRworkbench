@@ -1,13 +1,5 @@
 /* Practical ledgers for HR modules 04–08. Data is kept in this browser only. */
 (() => {
-  const sourceWorkbooks = {
-    onboard: ["03", "03-入职档案与合同-劳动合同到期提醒-原表.xlsx"],
-    attendance: ["04", "04-考勤与假勤-考勤自动统计分析-原表.xlsx"],
-    reward: ["05", "05-薪酬社保福利-工资表社保个税自动计算-原表.xlsx"],
-    talent: ["06", "06-绩效培训人才发展-绩效考核得分记录表-原表.xlsx"],
-    relation: ["07", "07-员工关系与离职-员工离职交接表-原表.xlsx"],
-    data: ["08", "08-HR数据与运营-人事月报明细系统-原表.xlsx"]
-  };
   const moduleDefs = {
     onboard: {
       id:"03",name:"入职档案与合同",note:"此处跟进入职后的转正与合同续签状态。具体通知时限、法律后果和合同处理结论需按当期政策与公司授权人工复核。",
@@ -104,7 +96,7 @@
     },
     data:{
       id:"08",name:"HR数据与运营",note:"月报数字由 HR 根据已核验来源汇总；不把示例口径当成公司指标定义。人员主数据沿用员工台账，质量检查与模板索引在本模块维护。",
-      tasks:{"制作HR月报":"reports","检查人员数据质量":"quality","查找流程和模板":"templates"},
+      tasks:{"制作HR月报":"reports","维护人员数据":"quality","检查人员数据质量":"quality","查找流程和模板":"templates"},
       tabs:{
         reports:{label:"月报指标",title:"HR 月报与指标台账",fields:[
           ["id","记录编号","text",true],["period","月份","text",true],["department","部门/范围","text",true],["opening","期初人数","number",true],["hires","本期入职","number",true],["exits","本期离职","number",true],["closing","期末人数","number",true],["source","来源/截止时点","text"],["owner","负责人","text"],["status","核对状态","select",true,["待汇总","待核对","已核验","已发布"]],["note","口径/说明","textarea"]
@@ -268,7 +260,7 @@
     const values={id,period,department:"本模块涉及记录",headcount:people.size,leaveUnpaid,overtimePending,attendancePending,sourceStatus:"待复核",owner:"",deadline:"",note:"系统按当前考勤/请假/加班台账统计；本人数不是全公司员工总人数，需补齐范围后人工复核"};
     if(row)Object.assign(row,values);else state.payroll.push(values);save(key,state);openModule(def,"payroll");
   }
-  function openModule(def,activeTab,keyword=""){
+  function openModule(def,activeTab,keyword="",taskTitle=""){
     const key=Object.keys(moduleDefs).find((k)=>moduleDefs[k]===def); const state=load(key,Object.fromEntries(Object.entries(def.tabs).map(([k,t])=>[k,t.rows])));
     const [tabKey,tab]=def.tabs[activeTab]? [activeTab,def.tabs[activeTab]]:[Object.keys(def.tabs)[0],def.tabs[Object.keys(def.tabs)[0]]];
     const rows=(state[tabKey]||[]).filter((row)=>!keyword||Object.values(row).join(" ").toLowerCase().includes(keyword.toLowerCase()));
@@ -279,11 +271,12 @@
     const reportIssues=tabKey==="reports"?rows.filter((r)=>Number(r.opening||0)+Number(r.hires||0)-Number(r.exits||0)!==Number(r.closing||0)).length:0;
     const reportTotals=tabKey==="reports"?rows.reduce((a,r)=>{for(const field of ["opening","hires","exits","closing"])a[field]+=Number(r[field]||0);return a;},{opening:0,hires:0,exits:0,closing:0}):null;
     const metricMarkup=key==="data"&&tabKey==="reports"?`<span><small>本页部门明细</small><strong>${rows.length}</strong></span><span><small>期初 / 期末人数</small><strong>${reportTotals.opening} / ${reportTotals.closing}</strong></span><span><small>本期入职 / 离职</small><strong>${reportTotals.hires} / ${reportTotals.exits}</strong></span><span class="${reportIssues?"has-issue":""}"><small>公式待核对</small><strong>${reportIssues}</strong></span>`:`<span><small>本页记录</small><strong>${rows.length}/${(state[tabKey]||[]).length}</strong></span><span><small>全部记录</small><strong>${activeCount}</strong></span><span><small>待跟进条目</small><strong>${pending}</strong></span><span class="${reportIssues?"has-issue":""}"><small>${reportIssues?"月报公式差异":"数据范围"}</small><strong>${reportIssues||"本机"}</strong></span>`;
-    const source=sourceWorkbooks[key];
-    content().innerHTML=`<div class="dialog-kicker">LEDGER · ${def.id} ${esc(def.name)}</div><h2 class="dialog-title">${esc(def.name)}工作台</h2><p>${esc(def.note)}</p><div class="org-metrics">${metricMarkup}</div><div class="org-tabs">${Object.entries(def.tabs).map(([k,t])=>`<button data-wm-tab="${k}" class="${k===tabKey?"is-active":""}">${esc(t.label)}</button>`).join("")}</div><div class="ledger-toolbar"><input id="wm-search" placeholder="搜索编号、员工、部门或状态" value="${esc(keyword)}"/><button class="outline-button" id="wm-add">新增记录 ＋</button><button class="outline-button" id="wm-backups">备份历史 ↶</button>${key==="attendance"&&tabKey==="payroll"?'<button class="outline-button" id="wm-attendance-rollup">从台账重算核对数</button>':""}</div><div class="ledger-heading"><strong>${esc(tab.title)} <span>${rows.length}/${(state[tabKey]||[]).length}</span></strong><small>先核对来源和责任人，再更新状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr>${displayFields.map((f)=>`<th>${esc(f[1])}</th>`).join("")}<th>操作</th></tr></thead><tbody>${rows.map((r)=>`<tr>${displayFields.map((f)=>`<td>${esc(r[f[0]])}</td>`).join("")}<td><button class="text-button" data-wm-edit="${esc(r.id)}">编辑</button></td></tr>`).join("")||`<tr><td colspan="${displayFields.length+1}" class="ledger-empty">暂无匹配记录</td></tr>`}</tbody></table></div>${reportIssues?`<div class="recruit-risk-card"><strong>有 ${reportIssues} 条人数变动公式待核实</strong><span>期初人数 + 本期入职 − 本期离职应等于期末人数；先核实统计时点与数据来源。</span></div>`:""}<div class="org-notes"><strong>工作提示</strong><span>台账只记录工作状态和受控资料位置，不在公开演示中保存真实敏感附件。</span><span>下面下载的是本模块对应的原始工作簿；工作簿与浏览器台账字段不同，不能直接导入台账。</span></div><div class="ledger-actions"><a class="file-button" href="assets/source-templates/${source[1]}" download>${source[0]} 下载本模块原表</a><label class="file-button">导入 Excel<input id="wm-import" type="file" accept=".xlsx,.xls" hidden/></label><button class="primary-button" id="wm-close">完成查看 ×</button></div>`;
+
+    content().innerHTML=`<div class="dialog-kicker">LEDGER · ${def.id} ${esc(def.name)}</div><h2 class="dialog-title">${esc(def.name)}工作台</h2><p>${esc(def.note)}</p><div class="org-metrics">${metricMarkup}</div><div class="org-tabs">${Object.entries(def.tabs).map(([k,t])=>`<button data-wm-tab="${k}" class="${k===tabKey?"is-active":""}">${esc(t.label)}</button>`).join("")}</div><div class="ledger-toolbar"><input id="wm-search" placeholder="搜索编号、员工、部门或状态" value="${esc(keyword)}"/><button class="outline-button" id="wm-add">新增记录 ＋</button><button class="outline-button" id="wm-backups">备份历史 ↶</button>${key==="attendance"&&tabKey==="payroll"?'<button class="outline-button" id="wm-attendance-rollup">从台账重算核对数</button>':""}</div><div class="ledger-heading"><strong>${esc(tab.title)} <span>${rows.length}/${(state[tabKey]||[]).length}</span></strong><small>先核对来源和责任人，再更新状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr>${displayFields.map((f)=>`<th>${esc(f[1])}</th>`).join("")}<th>操作</th></tr></thead><tbody>${rows.map((r)=>`<tr>${displayFields.map((f)=>`<td>${esc(r[f[0]])}</td>`).join("")}<td><button class="text-button" data-wm-edit="${esc(r.id)}">编辑</button></td></tr>`).join("")||`<tr><td colspan="${displayFields.length+1}" class="ledger-empty">暂无匹配记录</td></tr>`}</tbody></table></div>${reportIssues?`<div class="recruit-risk-card"><strong>有 ${reportIssues} 条人数变动公式待核实</strong><span>期初人数 + 本期入职 − 本期离职应等于期末人数；先核实统计时点与数据来源。</span></div>`:""}${window.renderModuleAIAssist(taskTitle||tab.title,key)}<div class="org-notes"><strong>工作提示</strong><span>台账只记录工作状态和受控资料位置，不在公开演示中保存真实敏感附件。</span></div><div class="ledger-actions"><label class="file-button">导入 Excel<input id="wm-import" type="file" accept=".xlsx,.xls" hidden/></label><button class="primary-button" id="wm-close">完成查看 ×</button></div>`;
+    window.bindModuleAIAssist(content());
     const dialog=rootDialog(); if(!dialog.open)dialog.showModal();
-    content().querySelectorAll("[data-wm-tab]").forEach((b)=>b.addEventListener("click",()=>openModule(def,b.dataset.wmTab)));
-    content().querySelector("#wm-search").addEventListener("input",(e)=>{const value=e.target.value;openModule(def,tabKey,value);const next=content().querySelector("#wm-search");next.focus();next.setSelectionRange(value.length,value.length);});
+    content().querySelectorAll("[data-wm-tab]").forEach((b)=>b.addEventListener("click",()=>openModule(def,b.dataset.wmTab,"",taskTitle)));
+    content().querySelector("#wm-search").addEventListener("input",(e)=>{const value=e.target.value;openModule(def,tabKey,value,taskTitle);const next=content().querySelector("#wm-search");next.focus();next.setSelectionRange(value.length,value.length);});
     content().querySelector("#wm-add").addEventListener("click",()=>openForm(def,state,key,tabKey));
     content().querySelectorAll("[data-wm-edit]").forEach((b)=>b.addEventListener("click",()=>openForm(def,state,key,tabKey,b.dataset.wmEdit)));
     content().querySelector("#wm-backups").addEventListener("click",()=>openBackup(def,state,key));
@@ -292,7 +285,7 @@
     content().querySelector("#wm-close").addEventListener("click",()=>dialog.close());
   }
   window.openPracticalModule=(taskTitle)=>{
-    for(const [key,def] of Object.entries(moduleDefs)){const tab=def.tasks[taskTitle];if(tab){openModule(def,tab);return true;}}
+    for(const [key,def] of Object.entries(moduleDefs)){const tab=def.tasks[taskTitle];if(tab){openModule(def,tab,"",taskTitle);return true;}}
     return false;
   };
 })();

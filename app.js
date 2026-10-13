@@ -369,7 +369,7 @@ function restoreEmployee(id) {
   openLedgerTool("", "all", true);
 }
 
-function openLedgerTool() {
+function openLedgerTool(taskTitle = "员工档案与合同核对") {
   const render = (keyword = "", statusFilter = "all", showArchived = false) => {
     const query = keyword.trim().toLowerCase();
     const linkSummary = getEmployeeLinkSummary();
@@ -393,7 +393,8 @@ function openLedgerTool() {
       const status = contractStatus(row);
       return `<tr class="${row.archived ? "is-archived" : ""}"><td><strong>${safeCell(row.name)}</strong><small>${safeCell(row.id)}</small></td><td>${safeCell(row.endDate)}<small>剩余 ${status.remaining} 天</small></td><td><span class="status ${status.className}">${status.text}</span></td></tr>`;
     }).join("");
-    dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 入职档案与合同</div><h2 class="dialog-title">员工台账</h2><p>先用编号、姓名、部门或岗位定位记录，再根据状态处理。导入错误会按行提示，不会静默覆盖。</p><div class="ledger-link-summary"><strong>员工主记录关联：${linkSummary.linked}/${linkSummary.total}</strong><small>${linkSummary.unlinked.length ? `待关联：${linkSummary.unlinked.slice(0, 5).map((id) => safeCell(id)).join("、")}` : "档案和合同均已按员工编号关联"}</small></div><div class="ledger-toolbar"><input id="ledger-search" placeholder="搜索员工、部门或岗位" value="${safeCell(keyword)}" /><select id="ledger-status"><option value="all" ${statusFilter === "all" ? "selected" : ""}>全部状态</option><option value="pending" ${statusFilter === "pending" ? "selected" : ""}>档案待补充</option><option value="verify" ${statusFilter === "verify" ? "selected" : ""}>档案待核验</option><option value="window" ${statusFilter === "window" ? "selected" : ""}>合同提醒窗口</option><option value="expired" ${statusFilter === "expired" ? "selected" : ""}>合同已到期</option></select><label class="ledger-check"><input id="ledger-show-archived" type="checkbox" ${showArchived ? "checked" : ""} /> 显示已归档</label><button class="outline-button" id="ledger-add">新增员工 <span>＋</span></button><button class="outline-button" id="ledger-backups">备份历史 <span>↶</span></button></div><div class="ledger-section"><div class="ledger-heading"><strong>档案完整性 <span>${archive.length}/${workState.archiveRows.length}</span></strong><small>按员工逐行查看材料状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>部门/岗位</th><th>材料状态 / 操作</th></tr></thead><tbody>${archiveRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的档案记录</td></tr>`}</tbody></table></div></div><div class="ledger-section"><div class="ledger-heading"><strong>合同到期 <span>${contracts.length}/${workState.contractRows.length}</span></strong><small>根据结束日期和提醒天数计算</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>合同结束日</th><th>状态</th></tr></thead><tbody>${contractRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的合同记录</td></tr>`}</tbody></table></div></div><div class="ledger-actions"><button class="outline-button" id="ledger-rollback" ${workState.backups?.length ? "" : "disabled"}>回滚上次变更 <span>↶</span></button><button class="outline-button" id="ledger-export">导出当前 Excel <span>↓</span></button><button class="primary-button" id="ledger-close">完成查看 <span>×</span></button></div>`;
+    dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 入职档案与合同</div><h2 class="dialog-title">员工台账</h2><p>先用编号、姓名、部门或岗位定位记录，再根据状态处理。导入错误会按行提示，不会静默覆盖。</p><div class="ledger-link-summary"><strong>员工主记录关联：${linkSummary.linked}/${linkSummary.total}</strong><small>${linkSummary.unlinked.length ? `待关联：${linkSummary.unlinked.slice(0, 5).map((id) => safeCell(id)).join("、")}` : "档案和合同均已按员工编号关联"}</small></div><div class="ledger-toolbar"><input id="ledger-search" placeholder="搜索员工、部门或岗位" value="${safeCell(keyword)}" /><select id="ledger-status"><option value="all" ${statusFilter === "all" ? "selected" : ""}>全部状态</option><option value="pending" ${statusFilter === "pending" ? "selected" : ""}>档案待补充</option><option value="verify" ${statusFilter === "verify" ? "selected" : ""}>档案待核验</option><option value="window" ${statusFilter === "window" ? "selected" : ""}>合同提醒窗口</option><option value="expired" ${statusFilter === "expired" ? "selected" : ""}>合同已到期</option></select><label class="ledger-check"><input id="ledger-show-archived" type="checkbox" ${showArchived ? "checked" : ""} /> 显示已归档</label><button class="outline-button" id="ledger-add">新增员工 <span>＋</span></button><button class="outline-button" id="ledger-backups">备份历史 <span>↶</span></button></div><div class="ledger-section"><div class="ledger-heading"><strong>档案完整性 <span>${archive.length}/${workState.archiveRows.length}</span></strong><small>按员工逐行查看材料状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>部门/岗位</th><th>材料状态 / 操作</th></tr></thead><tbody>${archiveRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的档案记录</td></tr>`}</tbody></table></div></div><div class="ledger-section"><div class="ledger-heading"><strong>合同到期 <span>${contracts.length}/${workState.contractRows.length}</span></strong><small>根据结束日期和提醒天数计算</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>合同结束日</th><th>状态</th></tr></thead><tbody>${contractRows || `<tr><td colspan="3" class="ledger-empty">没有匹配的合同记录</td></tr>`}</tbody></table></div></div>${renderModuleAIAssist(taskTitle,"onboard")}<div class="ledger-actions"><button class="outline-button" id="ledger-rollback" ${workState.backups?.length ? "" : "disabled"}>回滚上次变更 <span>↶</span></button><button class="primary-button" id="ledger-close">完成查看 <span>×</span></button></div>`;
+    bindModuleAIAssist(dialogContent);
     document.querySelector("#ledger-search").addEventListener("input", (event) => { const value = event.target.value; render(value, document.querySelector("#ledger-status").value, document.querySelector("#ledger-show-archived").checked); const next = document.querySelector("#ledger-search"); next.focus(); next.setSelectionRange(value.length, value.length); });
     document.querySelector("#ledger-status").addEventListener("change", (event) => render(document.querySelector("#ledger-search").value, event.target.value, document.querySelector("#ledger-show-archived").checked));
     document.querySelector("#ledger-show-archived").addEventListener("change", (event) => render(document.querySelector("#ledger-search").value, document.querySelector("#ledger-status").value, event.target.checked));
@@ -403,7 +404,6 @@ function openLedgerTool() {
     document.querySelectorAll("[data-restore-id]").forEach((button) => button.addEventListener("click", () => restoreEmployee(button.dataset.restoreId)));
     document.querySelector("#ledger-backups").addEventListener("click", openBackupManager);
     document.querySelector("#ledger-rollback").addEventListener("click", rollbackLastBackup);
-    document.querySelector("#ledger-export").addEventListener("click", exportDemoXlsx);
     document.querySelector("#ledger-close").addEventListener("click", () => dialog.close());
   };
   render();
@@ -636,10 +636,12 @@ function recruitInsightMarkup(stats) {
   return `<div class="recruit-insights"><div><small>候选人漏斗</small><div class="funnel-mini">${funnel}</div></div><div><small>渠道记录</small><strong>${channels}</strong></div><div><small>已入职</small><strong>${stats.hires} 人</strong></div></div>`;
 }
 
-function openRecruitLedger(initialTab = "applications") {
+function openRecruitLedger(initialTab = "applications", taskTitle = "") {
   const tab = ["applications", "demands", "interviews", "handoff"].includes(initialTab) ? initialTab : "applications";
   const stats = recruitStats();
-  dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 招聘与人才获取</div><h2 class="dialog-title">招聘工作台</h2><p>以招聘需求和应聘记录为主线，持续记录下一步动作；数据保存在当前浏览器，示例数据均为虚构。</p><p class="process-line">需求：提交 → 部门确认 → HR 评审 → 审批 → 岗位建模 → 招聘中</p><p class="process-line">候选人：筛选 → 面试 → 测评（按需）→ 背调授权（按需）→ 录用审批 → Offer → 入职或人才库</p><div class="metric-grid compact-metrics"><article class="metric-card"><span>进行中需求</span><strong>${stats.demands}</strong><small>含待审批与招聘中</small></article><article class="metric-card"><span>逾期跟进</span><strong>${stats.overdue}</strong><small>需要今天处理</small></article><article class="metric-card"><span>待反馈面试</span><strong>${stats.pendingInterviews}</strong><small>面试官尚未提交</small></article><article class="metric-card metric-card-accent"><span>待发/待确认 Offer</span><strong>${stats.offers}</strong><small>需人工复核</small></article></div><div class="ledger-toolbar recruit-toolbar"><button class="outline-button ${tab === "applications" ? "is-selected" : ""}" data-recruit-tab="applications">候选人漏斗</button><button class="outline-button ${tab === "demands" ? "is-selected" : ""}" data-recruit-tab="demands">招聘需求</button><button class="outline-button" id="recruit-add">新增记录 <span>＋</span></button><a class="file-button" href="assets/source-templates/02-招聘与人才获取-招聘需求面试入职统计表-原表.xlsx" download>02 下载招聘原表</a><label class="file-button">导入招聘 Excel<input id="recruit-import" type="file" accept=".xlsx,.xls" /></label><button class="outline-button" id="recruit-backups">备份历史 <span>↶</span></button></div><div id="recruit-table"></div><div class="org-notes"><strong>工作簿说明</strong><span>下载的是资料中的招聘原表，保持原样。它与浏览器台账字段不同，不能直接导入台账。</span></div><div class="ledger-actions"><button class="primary-button" id="recruit-close">完成查看 <span>×</span></button></div>`;
+  dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 招聘与人才获取</div><h2 class="dialog-title">招聘工作台</h2><p>以招聘需求和应聘记录为主线，持续记录下一步动作；数据保存在当前浏览器，示例数据均为虚构。</p><p class="process-line">需求：提交 → 部门确认 → HR 评审 → 审批 → 岗位建模 → 招聘中</p><p class="process-line">候选人：筛选 → 面试 → 测评（按需）→ 背调授权（按需）→ 录用审批 → Offer → 入职或人才库</p><div class="metric-grid compact-metrics"><article class="metric-card"><span>进行中需求</span><strong>${stats.demands}</strong><small>含待审批与招聘中</small></article><article class="metric-card"><span>逾期跟进</span><strong>${stats.overdue}</strong><small>需要今天处理</small></article><article class="metric-card"><span>待反馈面试</span><strong>${stats.pendingInterviews}</strong><small>面试官尚未提交</small></article><article class="metric-card metric-card-accent"><span>待发/待确认 Offer</span><strong>${stats.offers}</strong><small>需人工复核</small></article></div><div class="ledger-toolbar recruit-toolbar"><button class="outline-button ${tab === "applications" ? "is-selected" : ""}" data-recruit-tab="applications">候选人漏斗</button><button class="outline-button ${tab === "demands" ? "is-selected" : ""}" data-recruit-tab="demands">招聘需求</button><button class="outline-button" id="recruit-add">新增记录 <span>＋</span></button><label class="file-button">导入招聘 Excel<input id="recruit-import" type="file" accept=".xlsx,.xls" /></label><button class="outline-button" id="recruit-backups">备份历史 <span>↶</span></button></div><div id="recruit-table"></div><div class="ledger-actions"><button class="primary-button" id="recruit-close">完成查看 <span>×</span></button></div>`;
+  dialogContent.insertAdjacentHTML("beforeend", renderModuleAIAssist(taskTitle || "招聘与人才获取", "recruit"));
+  bindModuleAIAssist(dialogContent);
   document.querySelector(".recruit-toolbar").insertAdjacentHTML("beforebegin", `<div class="recruit-risk-card"><strong>AI 与隐私边界</strong><span>AI 只用于生成筛选摘要、面试问题、跟进提醒和沟通草稿；不自动决定录用，不替代 HR、用人部门或审批人。</span><span>联系方式、背调和测评信息按最小必要原则保存；背调必须先取得候选人授权，Offer 必须完成录用审批后发送。</span></div>`);
   document.querySelector(".recruit-toolbar").insertAdjacentHTML("afterbegin", `<button class="outline-button ${tab === "interviews" ? "is-selected" : ""}" data-recruit-tab="interviews">面试记录</button><button class="outline-button ${tab === "handoff" ? "is-selected" : ""}" data-recruit-tab="handoff">录用交接</button>`);
   function renderRecruitTable(activeTab = tab, keyword = "", stage = "all") {
@@ -674,7 +676,7 @@ function openRecruitLedger(initialTab = "applications") {
     document.querySelectorAll("[data-application-edit]").forEach((button) => button.addEventListener("click", () => openRecruitForm("application", button.dataset.applicationEdit, activeTab)));
     document.querySelectorAll("[data-application-next]").forEach((button) => button.addEventListener("click", () => advanceApplication(button.dataset.applicationNext, activeTab)));
   }
-  document.querySelectorAll("[data-recruit-tab]").forEach((button) => button.addEventListener("click", () => openRecruitLedger(button.dataset.recruitTab)));
+  document.querySelectorAll("[data-recruit-tab]").forEach((button) => button.addEventListener("click", () => openRecruitLedger(button.dataset.recruitTab, taskTitle)));
   document.querySelector("#recruit-add").addEventListener("click", () => { if (tab === "interviews") openInterviewForm("", tab); else if (tab === "handoff") openRecruitForm("application", "", tab); else openRecruitForm(tab === "demands" ? "demand" : "application", "", tab); });
   document.querySelector("#recruit-backups").addEventListener("click", openRecruitBackupManager);
   document.querySelector("#recruit-import").addEventListener("change", (event) => { if (event.target.files[0]) importRecruitXlsx(event.target.files[0]); event.target.value = ""; });
@@ -755,12 +757,12 @@ const portfolioSections = [
   { id: "intro", title: "自我介绍", description: "个人简介与工作经历", pages: [3, 4, 5] },
   { id: "results", title: "成果展示", description: "项目案例与模拟样例", pages: Array.from({ length: 10 }, (_, index) => index + 6) },
   { id: "outlook", title: "规划展望", description: "入职后的工作规划", pages: [16, 17] },
-  { id: "more", title: "更多……", description: "面向意向公司的定制内容", pages: [] },
+  { id: "more", title: "更多……", description: "", pages: [] },
 ];
 
 function openPortfolioSections() {
   dialog.classList.add("portfolio-dialog");
-  dialogContent.innerHTML = `<div class="dialog-kicker">PORTFOLIO · 作品集</div><h2 class="dialog-title">选择要查看的内容</h2><p>每个部分都可以在下方窗口中连续滚动查看。</p><div class="portfolio-section-options">${portfolioSections.map((section) => `<button class="portfolio-option" type="button" data-portfolio-section="${section.id}"><span><strong>${section.title}</strong><small>${section.description}</small></span><span class="portfolio-option-arrow">→</span></button>`).join("")}</div>`;
+  dialogContent.innerHTML = `<div class="dialog-kicker">PORTFOLIO · 作品集</div><h2 class="dialog-title">选择要查看的内容</h2><p>每个部分都可以在下方窗口中连续滚动查看。</p><div class="portfolio-section-options">${portfolioSections.map((section) => `<button class="portfolio-option" type="button" data-portfolio-section="${section.id}"><span><strong>${section.title}</strong>${section.description ? `<small>${section.description}</small>` : ""}</span><span class="portfolio-option-arrow">→</span></button>`).join("")}</div>`;
   dialog.showModal();
   dialogContent.querySelectorAll("[data-portfolio-section]").forEach((button) => button.addEventListener("click", () => openPortfolioSection(button.dataset.portfolioSection)));
 }
@@ -770,8 +772,7 @@ function openPortfolioSection(sectionId) {
   if (!section) return;
   dialog.classList.add("portfolio-dialog");
   if (section.id === "more") {
-    dialogContent.innerHTML = `<div class="dialog-kicker">PORTFOLIO · CUSTOM</div><h2 class="dialog-title">更多 · 定制内容</h2><p>只有在有明确意向公司，且了解到对方的具体需求后，才在这里补充岗位分析或定制解决方案。</p><div class="portfolio-custom-note"><strong>这里可以留空</strong><span>并不是每家公司都需要单独定制作品集；没有针对该公司的内容时，“更多”保持空白即可。通用版先展示自我介绍、成果展示和规划展望。</span></div><div class="ledger-actions"><button class="outline-button" type="button" id="portfolio-back">返回作品集目录</button></div>`;
-    dialogContent.querySelector("#portfolio-back").addEventListener("click", openPortfolioSections);
+    dialogContent.innerHTML = "";
     return;
   }
   const pageLabel = `${section.pages.length} 页`;
@@ -827,14 +828,16 @@ function backupOrgState(reason) { const snapshot = { departments: structuredClon
 function orgEsc(value) { return safeCell(value ?? ""); }
 function orgValidDate(value) { if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false; const date = new Date(`${value}T00:00:00Z`); return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value; }
 function orgShortage(row) { return Number(row.planned || 0) - Number(row.occupied || 0) - Number(row.recruiting || 0) - Number(row.frozen || 0); }
-function openOrgLedger(tab = "departments", keyword = "") {
+function openOrgLedger(tab = "departments", keyword = "", taskTitle = "") {
   const schema = orgTabs[tab] || orgTabs.departments;
   const rows = orgState[tab].filter((row) => !keyword || Object.values(row).join(" ").toLowerCase().includes(keyword.toLowerCase()));
   const issues = orgState.headcount.filter((row) => Number(row.occupied || 0) + Number(row.recruiting || 0) + Number(row.frozen || 0) > Number(row.planned || 0));
-  dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 01 组织与岗位</div><h2 class="dialog-title">组织与岗位工作台</h2><p>维护组织、岗位、编制和变更记录；审批权限按公司制度配置，示例数据均为虚构。</p><div class="org-metrics"><span><small>生效部门</small><strong>${orgState.departments.filter((r) => r.status === "生效").length}</strong></span><span><small>生效岗位</small><strong>${orgState.positions.filter((r) => r.status === "生效").length}</strong></span><span><small>待审批编制</small><strong>${orgState.headcount.filter((r) => r.status === "待审批").length}</strong></span><span class="${issues.length ? "has-issue" : ""}"><small>超编核对</small><strong>${issues.length}</strong></span></div>${issues.length ? `<div class="recruit-risk-card"><strong>需要复核 ${issues.length} 条编制记录</strong><span>${issues.map((r) => `${orgEsc(r.position)}：已占+招聘中+冻结 ${Number(r.occupied || 0) + Number(r.recruiting || 0) + Number(r.frozen || 0)} / 计划 ${Number(r.planned || 0)}`).join("；")}</span></div>` : ""}<div class="org-tabs">${Object.entries(orgTabs).map(([key, item]) => `<button data-org-tab="${key}" class="${key === tab ? "is-active" : ""}">${item.label}</button>`).join("")}</div><div class="ledger-toolbar"><input id="org-search" placeholder="搜索编号、部门、岗位或负责人" value="${orgEsc(keyword)}" /><button class="outline-button" id="org-add">新增记录 <span>＋</span></button><button class="outline-button" id="org-backups">备份历史 <span>↶</span></button></div><div class="ledger-heading"><strong>${schema.title} <span>${rows.length}/${orgState[tab].length}</span></strong><small>编号作为组织/岗位/编制关联键</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr>${schema.columns.map((k) => `<th>${schema.fields.find((f) => f[0] === k)?.[1] || k}</th>`).join("")}<th>操作</th></tr></thead><tbody>${rows.map((row) => `<tr>${schema.columns.map((key) => `<td>${key === "planned" ? `${Number(row.planned || 0)}<small>空缺 ${orgShortage(row)}</small>` : orgEsc(row[key])}</td>`).join("")}<td><button class="text-button" data-org-edit="${orgEsc(row.id)}">编辑</button></td></tr>`).join("") || `<tr><td colspan="${schema.columns.length + 1}" class="ledger-empty">没有匹配记录</td></tr>`}</tbody></table></div><div class="org-notes"><strong>流程提示</strong><span>部门提出需求 → HR 核对职责、工作量和编制余额 → 按公司授权审批 → 更新生效台账与历史记录。</span><span>超编提示只做数量校验；计划、已占、招聘中和冻结需由负责人根据当前有效口径核对。</span></div><div class="ledger-actions"><button class="outline-button" id="org-import">导入 Excel<input id="org-import-file" type="file" accept=".xlsx,.xls" hidden /></button><a class="file-button" href="assets/source-templates/01-组织与岗位-人员编制增减表-原表.xlsx" download>01 下载组织岗位原表</a><button class="primary-button" id="org-close">完成查看 <span>×</span></button></div>`;
+  dialogContent.innerHTML = `<div class="dialog-kicker">LEDGER · 01 组织与岗位</div><h2 class="dialog-title">组织与岗位工作台</h2><p>维护组织、岗位、编制和变更记录；审批权限按公司制度配置，示例数据均为虚构。</p><div class="org-metrics"><span><small>生效部门</small><strong>${orgState.departments.filter((r) => r.status === "生效").length}</strong></span><span><small>生效岗位</small><strong>${orgState.positions.filter((r) => r.status === "生效").length}</strong></span><span><small>待审批编制</small><strong>${orgState.headcount.filter((r) => r.status === "待审批").length}</strong></span><span class="${issues.length ? "has-issue" : ""}"><small>超编核对</small><strong>${issues.length}</strong></span></div>${issues.length ? `<div class="recruit-risk-card"><strong>需要复核 ${issues.length} 条编制记录</strong><span>${issues.map((r) => `${orgEsc(r.position)}：已占+招聘中+冻结 ${Number(r.occupied || 0) + Number(r.recruiting || 0) + Number(r.frozen || 0)} / 计划 ${Number(r.planned || 0)}`).join("；")}</span></div>` : ""}<div class="org-tabs">${Object.entries(orgTabs).map(([key, item]) => `<button data-org-tab="${key}" class="${key === tab ? "is-active" : ""}">${item.label}</button>`).join("")}</div><div class="ledger-toolbar"><input id="org-search" placeholder="搜索编号、部门、岗位或负责人" value="${orgEsc(keyword)}" /><button class="outline-button" id="org-add">新增记录 <span>＋</span></button><button class="outline-button" id="org-backups">备份历史 <span>↶</span></button></div><div class="ledger-heading"><strong>${schema.title} <span>${rows.length}/${orgState[tab].length}</span></strong><small>编号作为组织/岗位/编制关联键</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr>${schema.columns.map((k) => `<th>${schema.fields.find((f) => f[0] === k)?.[1] || k}</th>`).join("")}<th>操作</th></tr></thead><tbody>${rows.map((row) => `<tr>${schema.columns.map((key) => `<td>${key === "planned" ? `${Number(row.planned || 0)}<small>空缺 ${orgShortage(row)}</small>` : orgEsc(row[key])}</td>`).join("")}<td><button class="text-button" data-org-edit="${orgEsc(row.id)}">编辑</button></td></tr>`).join("") || `<tr><td colspan="${schema.columns.length + 1}" class="ledger-empty">没有匹配记录</td></tr>`}</tbody></table></div><div class="org-notes"><strong>流程提示</strong><span>部门提出需求 → HR 核对职责、工作量和编制余额 → 按公司授权审批 → 更新生效台账与历史记录。</span><span>超编提示只做数量校验；计划、已占、招聘中和冻结需由负责人根据当前有效口径核对。</span></div><div class="ledger-actions"><button class="outline-button" id="org-import">导入 Excel<input id="org-import-file" type="file" accept=".xlsx,.xls" hidden /></button><button class="primary-button" id="org-close">完成查看 <span>×</span></button></div>`;
+  dialogContent.insertAdjacentHTML("beforeend", renderModuleAIAssist(taskTitle || "组织与岗位", "org"));
+  bindModuleAIAssist(dialogContent);
   dialog.showModal();
-  document.querySelectorAll("[data-org-tab]").forEach((button) => button.addEventListener("click", () => openOrgLedger(button.dataset.orgTab)));
-  document.querySelector("#org-search").addEventListener("input", (event) => { const value = event.target.value; openOrgLedger(tab, value); const next = document.querySelector("#org-search"); next.focus(); next.setSelectionRange(value.length, value.length); });
+  document.querySelectorAll("[data-org-tab]").forEach((button) => button.addEventListener("click", () => openOrgLedger(button.dataset.orgTab, "", taskTitle)));
+  document.querySelector("#org-search").addEventListener("input", (event) => { const value = event.target.value; openOrgLedger(tab, value, taskTitle); const next = document.querySelector("#org-search"); next.focus(); next.setSelectionRange(value.length, value.length); });
   document.querySelector("#org-add").addEventListener("click", () => openOrgForm(tab));
   document.querySelectorAll("[data-org-edit]").forEach((button) => button.addEventListener("click", () => openOrgForm(tab, button.dataset.orgEdit)));
   document.querySelector("#org-backups").addEventListener("click", openOrgBackupManager);
@@ -888,6 +891,43 @@ const allTasks = modules.flatMap((module) => module.tasks.map((title) => ({
   description: module.description,
 })));
 
+const moduleAIGuides = {
+  org: {name:"组织与岗位", focus:"梳理组织层级、岗位职责、编制变化和审批衔接；检查名称、编号、汇报关系与生效日期是否一致。", output:"按‘发现的问题｜需要补充的信息｜建议处理步骤｜需审批/复核事项’输出。"},
+  recruit: {name:"招聘与人才获取", focus:"围绕招聘需求、候选人阶段、面试证据和下一步动作整理信息；不根据个人敏感属性做筛选或录用决定。", output:"按‘需求/候选人｜当前阶段｜已知证据｜待补问题｜下一步动作与负责人｜沟通草稿’输出；结论须对应明确证据。"},
+  onboard: {name:"入职档案与合同", focus:"整理入职准备、档案材料状态、合同节点和试用期跟进；区分必须材料与公司自定材料，不推断法律义务。", output:"按‘事项｜责任人｜截止时间｜材料/依据｜当前状态｜待确认问题’输出。"},
+  attendance: {name:"考勤与假勤", focus:"核对考勤异常、请假、加班和薪资前置数据；区分原始记录、员工说明、审批结果和待核事项。", output:"按‘人员编号/匿名编号｜日期｜异常或申请｜现有依据｜待核信息｜跟进动作’输出；不自行认定旷工、假期资格或支付结果。"},
+  reward: {name:"薪酬、社保、公积金与福利", focus:"整理经审批的薪酬变动、社保公积金办理和福利事项；仅使用用户给出的已核准规则，不推算或猜测税额、缴费金额和工资。", output:"按‘事项｜适用月份/地区｜已确认输入｜缺失输入｜审批/办理状态｜复核人’输出；金额计算口径不明时先列问题。"},
+  talent: {name:"绩效培训与发展", focus:"整理绩效周期、培训计划、参与记录和反馈；评价必须引用已提供的目标或行为证据，不虚构评分或给员工排名。", output:"按‘目标/课程｜时间节点｜参与/证据｜待跟进事项｜负责人’输出；区分事实、反馈与建议。"},
+  relation: {name:"员工关系与合规/离职", focus:"整理咨询、离职交接或争议事项的事实、沟通记录、证据位置和升级节点；不作法律结论，不推断责任。", output:"按‘已知事实｜尚缺材料｜待办节点｜负责人｜需升级对象｜中性沟通草稿’输出；标清事实与推测。"},
+  data: {name:"HR数据与运营", focus:"整理月报口径、人员主数据质量、数据差异和流程模板索引；先核对统计范围、时点、去重规则和来源，不编造指标。", output:"按‘指标/字段｜口径｜来源｜发现的差异｜需补数据｜核对动作’输出；列出可复算的计算步骤。"},
+};
+
+function renderModuleAIAssist(taskTitle, moduleId) {
+  const task = allTasks.find((item) => item.title === taskTitle);
+  const id = moduleAIGuides[moduleId] ? moduleId : task?.moduleId;
+  const guide = moduleAIGuides[id];
+  if (!guide) return "";
+  const prompt = `你是${guide.name}工作助理。现在协助处理任务：【${taskTitle || "模块内工作"}】。\n\n工作要求：${guide.focus}\n\n请只使用我提供的资料。不要补造员工信息、制度、数据、审批或法律结论；资料缺失、字段对不上或口径不清时，先列出问题并留空。请对个人信息做最小化处理，优先使用员工编号或匿名编号。\n\n请完成当前任务，并按以下格式整理：${guide.output}\n\n我提供的资料：\n[粘贴已脱敏的必要信息]\n\n适用制度/已确认口径（如有）：\n[粘贴公司已确认的规则；没有就写“未提供”，不要自行假设]`;
+  return `<details class="module-ai-assist"><summary>模块内 AI 辅助 · ${safeCell(taskTitle || guide.name)}</summary><p>提示词已按本模块和当前任务写好。补入脱敏后的必要信息，复制到 AI 对话中；结果回到本流程核对。</p><textarea class="module-ai-prompt" readonly rows="10" aria-label="${safeCell(taskTitle || guide.name)} AI 提示词">${safeCell(prompt)}</textarea><div class="module-ai-actions"><button class="outline-button" type="button" data-copy-module-prompt>复制提示词</button><small class="module-ai-copy-status" aria-live="polite">不要粘贴身份证号、联系方式、住址或未脱敏薪酬信息。</small></div></details>`;
+}
+
+function bindModuleAIAssist(root = dialogContent) {
+  root.querySelectorAll("[data-copy-module-prompt]").forEach((button) => button.addEventListener("click", async () => {
+    const card = button.closest(".module-ai-assist");
+    const field = card?.querySelector(".module-ai-prompt");
+    const status = card?.querySelector(".module-ai-copy-status");
+    if (!field) return;
+    try {
+      await navigator.clipboard.writeText(field.value);
+      if (status) status.textContent = "已复制；粘贴到 AI 对话后按本任务补充资料。";
+    } catch {
+      field.focus(); field.select();
+      const copied = document.execCommand("copy");
+      if (status) status.textContent = copied ? "已复制；粘贴到 AI 对话后按本任务补充资料。" : "复制未成功，请选中上方提示词后手动复制。";
+    }
+  }));
+}
+
 function renderModules() {
   moduleGrid.innerHTML = modules.map((module) => `
     <article class="module-card" data-module="${module.id}">
@@ -923,45 +963,51 @@ function renderTasks(query = "", moduleId = "") {
 }
 
 function openTask(title) {
+  if (window.openPracticalModule?.(title)) return;
   if (title === "维护人员数据") {
-    openLedgerTool();
+    openLedgerTool(title);
     return;
   }
   if (title === "我要办入职") {
-    openLedgerTool();
+    openLedgerTool(title);
     return;
   }
-  if (window.openPracticalModule?.(title)) return;
   if (["维护组织架构", "维护岗位说明书", "跟进编制与用人需求", "登记组织岗位变更"].includes(title)) {
     const tab = title === "维护组织架构" ? "departments" : title === "维护岗位说明书" ? "positions" : title === "登记组织岗位变更" ? "changes" : "headcount";
-    openOrgLedger(tab);
+    openOrgLedger(tab, "", title);
     return;
   }
   if (title === "我要办入职" || title === "onboarding") {
-    dialogContent.innerHTML = `<div class="dialog-kicker">${onboardingDetail.kicker}</div><h2 class="dialog-title">${onboardingDetail.title}</h2><p>${onboardingDetail.intro}</p>${onboardingDetail.sections.map(([heading, items]) => `<div class="dialog-section"><h4>${heading}</h4><ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul></div>`).join("")}<button class="primary-button" style="margin-top:22px" onclick="document.querySelector('#task-dialog').close()">先记下这个流程 <span>✓</span></button>`;
+    dialogContent.innerHTML = `<div class="dialog-kicker">${onboardingDetail.kicker}</div><h2 class="dialog-title">${onboardingDetail.title}</h2><p>${onboardingDetail.intro}</p>${onboardingDetail.sections.map(([heading, items]) => `<div class="dialog-section"><h4>${heading}</h4><ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul></div>`).join("")}${renderModuleAIAssist(title, "onboard")}<button class="primary-button" style="margin-top:22px" onclick="document.querySelector('#task-dialog').close()">先记下这个流程 <span>✓</span></button>`;
+    bindModuleAIAssist(dialogContent);
     dialog.showModal();
     return;
   }
   if (["提交招聘需求", "跟进招聘进度", "安排面试", "办理录用与 Offer", "维护人才库", "发布招聘需求", "整理候选人信息"].includes(title)) {
-    openRecruitLedger(title === "提交招聘需求" ? "demands" : "applications");
+    openRecruitLedger(title === "提交招聘需求" ? "demands" : "applications", title);
     return;
   }
   const interactiveTool = renderInteractiveTool(title);
   if (interactiveTool) {
-    dialogContent.innerHTML = `${interactiveTool}<button class="outline-button" style="margin-top:16px" onclick="document.querySelector('#task-dialog').close()">关闭工具</button>`;
+    const task = allTasks.find((item) => item.title === title);
+    dialogContent.innerHTML = `${interactiveTool}${renderModuleAIAssist(title, task?.moduleId)}<button class="outline-button" style="margin-top:16px" onclick="document.querySelector('#task-dialog').close()">关闭工具</button>`;
+    bindModuleAIAssist(dialogContent);
     dialog.showModal();
     bindInteractiveTool(title);
     return;
   }
   if (taskDetails[title]) {
     const detail = taskDetails[title];
-    dialogContent.innerHTML = `<div class="dialog-kicker">${detail.kicker}</div><h2 class="dialog-title">${detail.title}</h2><p>${detail.intro}</p>${detail.sections.map(([heading, items]) => `<div class="dialog-section"><h4>${heading}</h4><ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul></div>`).join("")}<button class="primary-button" style="margin-top:22px" onclick="document.querySelector('#task-dialog').close()">先记下这个流程 <span>✓</span></button>`;
+    const task = allTasks.find((item) => item.title === title);
+    dialogContent.innerHTML = `<div class="dialog-kicker">${detail.kicker}</div><h2 class="dialog-title">${detail.title}</h2><p>${detail.intro}</p>${detail.sections.map(([heading, items]) => `<div class="dialog-section"><h4>${heading}</h4><ul>${items.map((item) => `<li>${item}</li>`).join("")}</ul></div>`).join("")}${renderModuleAIAssist(title, task?.moduleId)}<button class="primary-button" style="margin-top:22px" onclick="document.querySelector('#task-dialog').close()">先记下这个流程 <span>✓</span></button>`;
+    bindModuleAIAssist(dialogContent);
     dialog.showModal();
     return;
   }
   const task = allTasks.find((item) => item.title === title);
   if (!task) return;
-  dialogContent.innerHTML = `<div class="dialog-kicker">${task.moduleName}</div><h2 class="dialog-title">${task.title}</h2><p>${task.description}。这个任务将在后续资料深读后补充完整流程、模板、风险提示和AI辅助卡片。</p><div class="dialog-section"><h4>当前状态</h4><ul><li>模块入口已建立</li><li>资料索引已建立，正文待按优先级深读</li><li>公开版先展示任务结构，不公开原始课程资料</li></ul></div>`;
+  dialogContent.innerHTML = `<div class="dialog-kicker">${task.moduleName}</div><h2 class="dialog-title">${task.title}</h2><p>${task.description}</p><div class="dialog-section"><h4>处理起点</h4><ul><li>先确认任务目标、涉及期间和责任人。</li><li>整理现有记录与制度依据，缺失信息留待确认，不自行补全。</li><li>完成后更新对应模块台账，并由负责人复核。</li></ul></div>${renderModuleAIAssist(task.title, task.moduleId)}`;
+  bindModuleAIAssist(dialogContent);
   dialog.showModal();
 }
 
