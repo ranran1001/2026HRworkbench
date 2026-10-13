@@ -1084,7 +1084,11 @@ document.querySelector("[data-task='onboarding']").addEventListener("click", () 
 document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
 document.querySelector("#dialog-close").addEventListener("click", () => dialog.close());
 dialog.addEventListener("close", () => dialog.classList.remove("portfolio-dialog"));
-dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+dialog.addEventListener("click", (event) => {
+  const bounds = dialog.getBoundingClientRect();
+  const outside = event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom;
+  if (event.target === dialog || outside) dialog.close();
+});
 document.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); searchInput.focus(); }
 });

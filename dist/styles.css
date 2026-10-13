@@ -147,7 +147,7 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .site-footer { display: flex; justify-content: space-between; width: min(1180px, 89%); margin: 60px auto 0; padding: 22px 0 32px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
 .task-dialog { width: min(530px, 90vw); padding: 28px; border: 0; border-radius: 20px; color: var(--ink); box-shadow: 0 25px 80px rgba(10,30,40,.22); }
 .task-dialog::backdrop { background: rgba(16,47,50,.35); backdrop-filter: blur(3px); }
-.dialog-close { position: absolute; top: 14px; right: 17px; border: 0; background: transparent; color: var(--muted); font-size: 24px; }
+.dialog-close { position: absolute; z-index: 2; top: 14px; right: 17px; border: 0; background: transparent; color: var(--muted); font-size: 24px; cursor: pointer; }
 .dialog-kicker { color: var(--accent); font-size: 10px; font-weight: 800; letter-spacing: .12em; }
 .dialog-title { margin: 8px 0 17px; font-size: 24px; letter-spacing: -.04em; }
 .dialog-section { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
