@@ -284,11 +284,10 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 /* Portfolio entry and section viewer */
 .portfolio-section .section-heading { align-items: end; }
 .portfolio-section .section-heading p:not(.eyebrow) { margin: 6px 0 0; color: var(--ink-soft); font-size: 12px; }
-.portfolio-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px 24px; }
-.portfolio-intro { display: grid; gap: 6px; }
-.portfolio-intro strong { color: var(--ink); font-size: 16px; }
-.portfolio-intro span { color: var(--ink-soft); font-size: 12px; }
-.portfolio-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.portfolio-panel { display: block; padding: 22px 24px; }
+.portfolio-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 18px; }
+.portfolio-actions #open-portfolio { min-height: 64px; width: 100%; justify-content: center; font-size: 16px; }
+.portfolio-actions #download-full-portfolio { min-height: 46px; padding: 10px 16px; justify-content: center; font-size: 12px; white-space: nowrap; }
 .portfolio-actions a { text-decoration: none; }
 .portfolio-dialog { width: min(1060px, 96vw); max-height: 92vh; overflow: hidden; padding: 30px 30px 22px; }
 .portfolio-dialog #dialog-content { display: flex; flex-direction: column; min-height: 0; }
@@ -310,9 +309,10 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .portfolio-custom-note { display: grid; gap: 8px; margin: 18px 0; padding: 18px; border: 1px dashed var(--line); border-radius: 12px; color: var(--ink-soft); background: var(--surface-soft); font-size: 12px; }
 .portfolio-custom-note strong { color: var(--ink); font-size: 13px; }
 @media (max-width: 680px) {
-  .portfolio-panel { align-items: flex-start; flex-direction: column; padding: 18px; }
-  .portfolio-actions { width: 100%; }
-  .portfolio-actions > * { flex: 1 1 100%; justify-content: center; }
+  .portfolio-panel { padding: 18px; }
+  .portfolio-actions { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+  .portfolio-actions #open-portfolio { min-height: 58px; }
+  .portfolio-actions #download-full-portfolio { padding: 9px 11px; font-size: 11px; }
   .portfolio-dialog { width: 96vw; max-height: 94vh; padding: 26px 15px 16px; }
   .portfolio-section-options { grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
   .portfolio-option { min-height: 64px; }
