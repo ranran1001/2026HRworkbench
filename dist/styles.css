@@ -281,13 +281,42 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 @media (max-width: 800px) { .source-template-panel { grid-template-columns: 1fr; } }
 @media (max-width: 500px) { .source-template-grid { grid-template-columns: 1fr; } }
 
-/* Single-file portfolio viewer, ready for later case-study expansion */
+/* Portfolio entry and section viewer */
 .portfolio-section .section-heading { align-items: end; }
 .portfolio-section .section-heading p:not(.eyebrow) { margin: 6px 0 0; color: var(--ink-soft); font-size: 12px; }
-.portfolio-panel { overflow: hidden; padding: 0; }
-.portfolio-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 16px; border-bottom: 1px solid var(--line); }
-.portfolio-toolbar a { color: var(--accent-deep); font-size: 12px; font-weight: 700; text-decoration: none; }
-.portfolio-pdf { display: block; width: 100%; height: min(82vh, 1120px); min-height: 620px; border: 0; background: #272a31; }
-.portfolio-fallback { margin: 0; padding: 9px 16px; color: var(--ink-soft); font-size: 11px; }
-.portfolio-fallback a { color: var(--accent-deep); }
-@media (max-width: 680px) { .portfolio-pdf { height: 78vh; min-height: 540px; } .portfolio-toolbar { align-items: flex-start; } }
+.portfolio-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px 24px; }
+.portfolio-intro { display: grid; gap: 6px; }
+.portfolio-intro strong { color: var(--ink); font-size: 16px; }
+.portfolio-intro span { color: var(--ink-soft); font-size: 12px; }
+.portfolio-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.portfolio-actions a { text-decoration: none; }
+.portfolio-dialog { width: min(1060px, 96vw); max-height: 92vh; overflow: hidden; padding: 30px 30px 22px; }
+.portfolio-dialog #dialog-content { display: flex; flex-direction: column; min-height: 0; }
+.portfolio-dialog .dialog-title { margin-right: 44px; }
+.portfolio-section-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 18px 0 4px; }
+.portfolio-option { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 74px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--surface-soft); text-align: left; cursor: pointer; }
+.portfolio-option:hover, .portfolio-option:focus-visible { border-color: var(--accent); background: #f1f7f3; }
+.portfolio-option > span:first-child { display: grid; gap: 5px; }
+.portfolio-option strong { font-size: 14px; }
+.portfolio-option small { color: var(--ink-soft); font-size: 11px; }
+.portfolio-option-arrow { color: var(--accent-deep); font-size: 20px; }
+.portfolio-viewer-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 14px; }
+.portfolio-viewer-heading .dialog-title { margin: 0; }
+.portfolio-viewer-heading p { margin: 5px 0 0; color: var(--ink-soft); font-size: 12px; }
+.portfolio-page-stack { min-height: 0; max-height: min(68vh, 760px); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 12px; background: #e9eee9; scroll-behavior: smooth; }
+.portfolio-page { margin: 0 auto; padding: 10px 10px 4px; text-align: center; }
+.portfolio-page img { display: block; width: min(100%, 980px); height: auto; margin: 0 auto; border-radius: 3px; box-shadow: 0 3px 14px rgba(15, 35, 28, .12); }
+.portfolio-page figcaption { padding: 6px 0 8px; color: var(--ink-soft); font-size: 10px; }
+.portfolio-custom-note { display: grid; gap: 8px; margin: 18px 0; padding: 18px; border: 1px dashed var(--line); border-radius: 12px; color: var(--ink-soft); background: var(--surface-soft); font-size: 12px; }
+.portfolio-custom-note strong { color: var(--ink); font-size: 13px; }
+@media (max-width: 680px) {
+  .portfolio-panel { align-items: flex-start; flex-direction: column; padding: 18px; }
+  .portfolio-actions { width: 100%; }
+  .portfolio-actions > * { flex: 1 1 100%; justify-content: center; }
+  .portfolio-dialog { width: 96vw; max-height: 94vh; padding: 26px 15px 16px; }
+  .portfolio-section-options { grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
+  .portfolio-option { min-height: 64px; }
+  .portfolio-viewer-heading { align-items: flex-start; }
+  .portfolio-page-stack { max-height: 68vh; }
+  .portfolio-page { padding: 7px 6px 3px; }
+}

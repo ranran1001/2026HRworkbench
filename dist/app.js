@@ -753,6 +753,34 @@ const searchInput = document.querySelector("#global-search");
 const dialog = document.querySelector("#task-dialog");
 const dialogContent = document.querySelector("#dialog-content");
 
+const portfolioSections = [
+  { id: "intro", title: "自我介绍", description: "个人简介与工作经历", pages: [3, 4, 5] },
+  { id: "results", title: "成果展示", description: "项目案例与模拟样例", pages: Array.from({ length: 10 }, (_, index) => index + 6) },
+  { id: "outlook", title: "规划展望", description: "入职后的工作规划", pages: [16, 17] },
+  { id: "more", title: "更多……", description: "面向意向公司的定制内容", pages: [] },
+];
+
+function openPortfolioSections() {
+  dialog.classList.add("portfolio-dialog");
+  dialogContent.innerHTML = `<div class="dialog-kicker">PORTFOLIO · 作品集</div><h2 class="dialog-title">选择要查看的内容</h2><p>每个部分都可以在下方窗口中连续滚动查看。</p><div class="portfolio-section-options">${portfolioSections.map((section) => `<button class="portfolio-option" type="button" data-portfolio-section="${section.id}"><span><strong>${section.title}</strong><small>${section.description}</small></span><span class="portfolio-option-arrow">→</span></button>`).join("")}</div>`;
+  dialog.showModal();
+  dialogContent.querySelectorAll("[data-portfolio-section]").forEach((button) => button.addEventListener("click", () => openPortfolioSection(button.dataset.portfolioSection)));
+}
+
+function openPortfolioSection(sectionId) {
+  const section = portfolioSections.find((item) => item.id === sectionId);
+  if (!section) return;
+  dialog.classList.add("portfolio-dialog");
+  if (section.id === "more") {
+    dialogContent.innerHTML = `<div class="dialog-kicker">PORTFOLIO · CUSTOM</div><h2 class="dialog-title">更多 · 定制内容</h2><p>有明确意向公司后，可以在这里补充针对该公司的岗位需求分析、面试中了解到的问题，以及为公司定制的解决方案。</p><div class="portfolio-custom-note"><strong>当前暂未添加定制页面</strong><span>通用版先展示自我介绍、成果展示和规划展望。</span></div><div class="ledger-actions"><button class="outline-button" type="button" id="portfolio-back">返回作品集目录</button></div>`;
+    dialogContent.querySelector("#portfolio-back").addEventListener("click", openPortfolioSections);
+    return;
+  }
+  const pageLabel = `${section.pages.length} 页`;
+  dialogContent.innerHTML = `<div class="dialog-kicker">PORTFOLIO · ${section.title}</div><div class="portfolio-viewer-heading"><div><h2 class="dialog-title">${section.title}</h2><p>${section.description} · ${pageLabel}</p></div><button class="outline-button" type="button" id="portfolio-back">返回目录</button></div><div class="portfolio-page-stack" aria-label="${section.title}页面，可滚动查看">${section.pages.map((page, index) => `<figure class="portfolio-page"><img src="assets/portfolio/pages/page-${String(page).padStart(2, "0")}.png" alt="${section.title}，第 ${index + 1} 页" loading="${index > 1 ? "lazy" : "eager"}" /><figcaption>第 ${index + 1} 页</figcaption></figure>`).join("")}</div>`;
+  dialogContent.querySelector("#portfolio-back").addEventListener("click", openPortfolioSections);
+}
+
 function hydrateTemplateLinks() {
   if (!window.HR_XLSX_TEMPLATES) return;
   const prefix = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,";
@@ -978,9 +1006,11 @@ document.querySelector("#import-demo-csv").addEventListener("change", (event) =>
 document.querySelector("#export-demo-xlsx").addEventListener("click", exportDemoXlsx);
 document.querySelector("#import-demo-xlsx").addEventListener("change", (event) => { if (event.target.files[0]) importDemoXlsx(event.target.files[0]); });
 document.querySelector("#open-ledger").addEventListener("click", openLedgerTool);
+document.querySelector("#open-portfolio").addEventListener("click", openPortfolioSections);
 document.querySelector("[data-task='onboarding']").addEventListener("click", () => openTask("onboarding"));
 document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
 document.querySelector("#dialog-close").addEventListener("click", () => dialog.close());
+dialog.addEventListener("close", () => dialog.classList.remove("portfolio-dialog"));
 dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
 document.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); searchInput.focus(); }
