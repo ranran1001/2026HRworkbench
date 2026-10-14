@@ -1,5 +1,80 @@
 /* Practical ledgers for HR modules 04–08. Data is kept in this browser only. */
 (() => {
+  const moduleResources = {
+    org: [
+      { title: "组织与岗位编制表", type: "Excel原表", path: "source-templates/01-组织与岗位-人员编制增减表-原表.xlsx" },
+      { title: "招聘岗位人才画像基础模板", type: "Excel模板", path: "module-resources/recruit/招聘岗位人才画像-基础版.xlsx" },
+    ],
+    recruit: [
+      { title: "招聘需求、面试与入职跟进表", type: "Excel原表", path: "source-templates/02-招聘与人才获取-招聘需求面试入职统计表-原表.xlsx" },
+      { title: "常规招聘流程表", type: "Excel流程", path: "招聘流程表.xlsx" },
+      { title: "招聘需求评估表", type: "Excel模板", path: "招聘需求评估表.xlsx" },
+      { title: "电话面试邀约话术", type: "Excel话术", path: "电话面试邀约话术.xlsx" },
+      { title: "岗位人才画像基础模板", type: "Excel模板", path: "招聘岗位人才画像-基础版.xlsx" },
+      { title: "结构化面试提纲", type: "Excel模板", path: "HR结构化面试提纲.xlsx" },
+      { title: "面试基本流程", type: "Word流程", path: "面试基本流程.docx" },
+      { title: "招聘全流程模拟案例", type: "模拟案例", path: "招聘全流程模拟案例.docx" },
+      { title: "招聘全流程模拟练习表", type: "Excel练习表", path: "招聘全流程模拟练习表.xlsx" },
+    ],
+    onboard: [
+      { title: "劳动合同到期提醒", type: "Excel原表", path: "source-templates/03-入职档案与合同-劳动合同到期提醒-原表.xlsx" },
+      { title: "档案完整性检查模板", type: "Excel模板", path: "HR档案完整性清单模板.xlsx" },
+      { title: "合同到期提醒模板", type: "Excel模板", path: "HR合同到期提醒模板.xlsx" },
+      { title: "新员工入职流程", type: "Word流程", path: "module-resources/onboard/新员工入职流程.docx" },
+      { title: "出入职管理模拟案例", type: "模拟案例", path: "module-resources/onboard/入职管理模拟案例.docx" },
+      { title: "入职管理练习表", type: "Excel练习表", path: "module-resources/onboard/入职管理练习表.xlsx" },
+    ],
+    attendance: [
+      { title: "考勤自动统计分析表", type: "Excel原表", path: "source-templates/04-考勤与假勤-考勤自动统计分析-原表.xlsx" },
+      { title: "年假剩余天数计算表", type: "Excel公式表", path: "module-resources/attendance/员工年假统计表（自动计算剩余年假）.xlsx" },
+      { title: "请休假申请单", type: "Word表单", path: "module-resources/attendance/请休假申请单.docx" },
+      { title: "考勤假期模拟案例", type: "模拟案例", path: "module-resources/attendance/考勤假期模拟案例.docx" },
+      { title: "考勤假期练习表", type: "Excel练习表", path: "module-resources/attendance/考勤假期练习表.xlsx" },
+    ],
+    reward: [
+      { title: "工资、社保与个税自动计算表", type: "Excel公式原表", path: "source-templates/05-薪酬社保福利-工资表社保个税自动计算-原表.xlsx" },
+      { title: "薪酬核算模拟案例", type: "模拟案例", path: "module-resources/payroll/薪酬核算模拟案例.docx" },
+      { title: "薪酬核算练习表", type: "Excel练习表", path: "module-resources/payroll/薪酬核算练习表.xlsx" },
+    ],
+    talent: [
+      { title: "绩效考核与培训记录表", type: "Excel原表", path: "source-templates/06-绩效培训人才发展-绩效考核得分记录表-原表.xlsx" },
+      { title: "年度培训计划表", type: "Excel模板", path: "module-resources/training/年度培训计划表（参考）.xlsx" },
+      { title: "培训实施流程", type: "Word流程", path: "module-resources/training/培训实施流程.docx" },
+      { title: "培训效果评估流程", type: "Word流程", path: "module-resources/training/培训效果评估流程.docx" },
+      { title: "培训通知", type: "Word模板", path: "module-resources/training/培训通知.docx" },
+      { title: "培训签到表", type: "Word模板", path: "module-resources/training/培训签到表.docx" },
+      { title: "培训反馈问卷", type: "Word模板", path: "module-resources/training/培训反馈问卷.docx" },
+      { title: "培训发展模拟案例", type: "模拟案例", path: "module-resources/training/培训发展模拟案例.docx" },
+      { title: "培训发展练习表", type: "Excel练习表", path: "module-resources/training/培训发展练习表.xlsx" },
+      { title: "企业文化与员工活动模拟案例", type: "模拟案例", path: "module-resources/training/企业文化与员工活动模拟案例.docx" },
+      { title: "企业文化与员工活动模板", type: "Excel多表模板", path: "module-resources/training/企业文化与员工活动模板.xlsx" },
+    ],
+    relation: [
+      { title: "员工关系与离职交接表", type: "Excel原表", path: "source-templates/07-员工关系与离职-员工离职交接表-原表.xlsx" },
+      { title: "员工关系与HRSSC工作指引", type: "Word指引", path: "module-resources/relation/员工关系与HRSSC工作指引.docx" },
+      { title: "员工关系日常工作清单", type: "Excel清单", path: "module-resources/relation/员工关系工作清单.xlsx" },
+      { title: "员工关怀全生命周期表", type: "Excel模板", path: "module-resources/relation/员工关怀全生命周期.xlsx" },
+      { title: "员工关怀落地指引", type: "Word指引", path: "module-resources/relation/员工关怀落地指引.docx" },
+      { title: "员工调岗与薪酬变动流程图", type: "Word流程图", path: "module-resources/relation/员工调岗薪酬变动流程图.docx" },
+      { title: "员工离职交接流程", type: "Word流程", path: "module-resources/relation/员工离职交接流程.docx" },
+      { title: "员工关系冲突模拟案例", type: "模拟案例", path: "module-resources/relation/员工关系模拟案例.docx" },
+      { title: "员工关系练习表", type: "Excel练习表", path: "module-resources/relation/员工关系练习表.xlsx" },
+    ],
+    data: [
+      { title: "HR月报明细与统计系统", type: "Excel公式原表", path: "source-templates/08-HR数据与运营-人事月报明细系统-原表.xlsx" },
+      { title: "员工入职到离职全生命周期流程", type: "Excel流程表", path: "module-resources/data/员工全生命周期工作流程.xlsx" },
+    ],
+  };
+  window.renderModuleResources = (moduleKey) => {
+    const files = moduleResources[moduleKey] || [];
+    if (!files.length) return "";
+    return `<details class="module-resource-library"><summary>配套资料与练习 · ${files.length} 项</summary><p>原始工作簿与练习模板按模块整理。打开前先核对适用范围、示例信息和当前单位制度。</p><div class="module-resource-list">${files.map((file) => {
+      const path = file.path.startsWith("source-templates/") || file.path.startsWith("module-resources/") || file.path.startsWith("HR档案") || file.path.startsWith("HR合同")
+        ? file.path
+        : `module-resources/${moduleKey}/${file.path}`;
+      return `<a class="module-resource-link" href="assets/${path.split("/").map(encodeURIComponent).join("/")}" download><span><strong>${file.title}</strong><small>${file.type}</small></span><b>下载</b></a>`;
+    }).join("")}</div></details>`;
+  };
   const moduleDefs = {
     onboard: {
       id:"03",name:"入职档案与合同",note:"此处跟进入职后的转正与合同续签状态。具体通知时限、法律后果和合同处理结论需按当期政策与公司授权人工复核。",
@@ -272,7 +347,7 @@
     const reportTotals=tabKey==="reports"?rows.reduce((a,r)=>{for(const field of ["opening","hires","exits","closing"])a[field]+=Number(r[field]||0);return a;},{opening:0,hires:0,exits:0,closing:0}):null;
     const metricMarkup=key==="data"&&tabKey==="reports"?`<span><small>本页部门明细</small><strong>${rows.length}</strong></span><span><small>期初 / 期末人数</small><strong>${reportTotals.opening} / ${reportTotals.closing}</strong></span><span><small>本期入职 / 离职</small><strong>${reportTotals.hires} / ${reportTotals.exits}</strong></span><span class="${reportIssues?"has-issue":""}"><small>公式待核对</small><strong>${reportIssues}</strong></span>`:`<span><small>本页记录</small><strong>${rows.length}/${(state[tabKey]||[]).length}</strong></span><span><small>全部记录</small><strong>${activeCount}</strong></span><span><small>待跟进条目</small><strong>${pending}</strong></span><span class="${reportIssues?"has-issue":""}"><small>${reportIssues?"月报公式差异":"数据范围"}</small><strong>${reportIssues||"本机"}</strong></span>`;
 
-    content().innerHTML=`<div class="dialog-kicker">LEDGER · ${def.id} ${esc(def.name)}</div><h2 class="dialog-title">${esc(def.name)}工作台</h2><p>${esc(def.note)}</p><div class="org-metrics">${metricMarkup}</div><div class="org-tabs">${Object.entries(def.tabs).map(([k,t])=>`<button data-wm-tab="${k}" class="${k===tabKey?"is-active":""}">${esc(t.label)}</button>`).join("")}</div><div class="ledger-toolbar"><input id="wm-search" placeholder="搜索编号、员工、部门或状态" value="${esc(keyword)}"/><button class="outline-button" id="wm-add">新增记录 ＋</button><button class="outline-button" id="wm-backups">备份历史 ↶</button>${key==="attendance"&&tabKey==="payroll"?'<button class="outline-button" id="wm-attendance-rollup">从台账重算核对数</button>':""}</div><div class="ledger-heading"><strong>${esc(tab.title)} <span>${rows.length}/${(state[tabKey]||[]).length}</span></strong><small>先核对来源和责任人，再更新状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr>${displayFields.map((f)=>`<th>${esc(f[1])}</th>`).join("")}<th>操作</th></tr></thead><tbody>${rows.map((r)=>`<tr>${displayFields.map((f)=>`<td>${esc(r[f[0]])}</td>`).join("")}<td><button class="text-button" data-wm-edit="${esc(r.id)}">编辑</button></td></tr>`).join("")||`<tr><td colspan="${displayFields.length+1}" class="ledger-empty">暂无匹配记录</td></tr>`}</tbody></table></div>${reportIssues?`<div class="recruit-risk-card"><strong>有 ${reportIssues} 条人数变动公式待核实</strong><span>期初人数 + 本期入职 − 本期离职应等于期末人数；先核实统计时点与数据来源。</span></div>`:""}${window.renderModuleAIAssist(taskTitle||tab.title,key)}<div class="org-notes"><strong>工作提示</strong><span>台账只记录工作状态和受控资料位置，不在公开演示中保存真实敏感附件。</span></div><div class="ledger-actions"><label class="file-button">导入 Excel<input id="wm-import" type="file" accept=".xlsx,.xls" hidden/></label><button class="primary-button" id="wm-close">完成查看 ×</button></div>`;
+    content().innerHTML=`<div class="dialog-kicker">LEDGER · ${def.id} ${esc(def.name)}</div><h2 class="dialog-title">${esc(def.name)}工作台</h2><p>${esc(def.note)}</p>${window.renderModuleResources?.(key) || ""}<div class="org-metrics">${metricMarkup}</div><div class="org-tabs">${Object.entries(def.tabs).map(([k,t])=>`<button data-wm-tab="${k}" class="${k===tabKey?"is-active":""}">${esc(t.label)}</button>`).join("")}</div><div class="ledger-toolbar"><input id="wm-search" placeholder="搜索编号、员工、部门或状态" value="${esc(keyword)}"/><button class="outline-button" id="wm-add">新增记录 ＋</button><button class="outline-button" id="wm-backups">备份历史 ↶</button>${key==="attendance"&&tabKey==="payroll"?'<button class="outline-button" id="wm-attendance-rollup">从台账重算核对数</button>':""}</div><div class="ledger-heading"><strong>${esc(tab.title)} <span>${rows.length}/${(state[tabKey]||[]).length}</span></strong><small>先核对来源和责任人，再更新状态</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr>${displayFields.map((f)=>`<th>${esc(f[1])}</th>`).join("")}<th>操作</th></tr></thead><tbody>${rows.map((r)=>`<tr>${displayFields.map((f)=>`<td>${esc(r[f[0]])}</td>`).join("")}<td><button class="text-button" data-wm-edit="${esc(r.id)}">编辑</button></td></tr>`).join("")||`<tr><td colspan="${displayFields.length+1}" class="ledger-empty">暂无匹配记录</td></tr>`}</tbody></table></div>${reportIssues?`<div class="recruit-risk-card"><strong>有 ${reportIssues} 条人数变动公式待核实</strong><span>期初人数 + 本期入职 − 本期离职应等于期末人数；先核实统计时点与数据来源。</span></div>`:""}${window.renderModuleAIAssist(taskTitle||tab.title,key)}<div class="org-notes"><strong>工作提示</strong><span>台账只记录工作状态和受控资料位置，不在公开演示中保存真实敏感附件。</span></div><div class="ledger-actions"><label class="file-button">导入 Excel<input id="wm-import" type="file" accept=".xlsx,.xls" hidden/></label><button class="primary-button" id="wm-close">完成查看 ×</button></div>`;
     window.bindModuleAIAssist(content());
     const dialog=rootDialog(); if(!dialog.open)dialog.showModal();
     content().querySelectorAll("[data-wm-tab]").forEach((b)=>b.addEventListener("click",()=>openModule(def,b.dataset.wmTab,"",taskTitle)));

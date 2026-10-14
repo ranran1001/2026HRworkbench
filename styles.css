@@ -230,6 +230,16 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
 .org-tabs ~ .ledger-toolbar { grid-template-columns: minmax(140px, 1fr) auto auto; }
 .org-notes { display: grid; gap: 5px; margin-top: 16px; padding: 11px 12px; border-radius: 9px; background: var(--surface-soft); color: var(--ink-soft); font-size: 10px; line-height: 1.6; }
 .org-notes strong { color: var(--ink); font-size: 11px; }
+.module-resource-library { margin-top: 16px; border: 1px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+.module-resource-library > summary { padding: 13px 15px; color: var(--ink); font-size: 12px; font-weight: 700; cursor: pointer; }
+.module-resource-library > p { margin: 0; padding: 0 15px 10px; color: var(--ink-soft); font-size: 10px; line-height: 1.5; }
+.module-resource-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0 12px 12px; }
+.module-resource-link { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; padding: 10px 11px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink); text-decoration: none; background: var(--surface-soft); }
+.module-resource-link:hover { border-color: var(--accent); background: #fff; }
+.module-resource-link span { display: grid; gap: 4px; min-width: 0; }
+.module-resource-link strong { overflow: hidden; color: var(--ink); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.module-resource-link small { color: var(--ink-soft); font-size: 9px; }
+.module-resource-link b { flex: 0 0 auto; color: var(--accent); font-size: 10px; }
 .org-form select, .org-form textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); background: var(--surface-soft); font: inherit; font-size: 12px; }
 .org-form textarea { resize: vertical; min-height: 64px; }
 .org-form input[type="number"] { font-variant-numeric: tabular-nums; }
@@ -269,6 +279,7 @@ kbd { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color
   .form-two-col { grid-template-columns: 1fr; }
   .ledger-actions { flex-direction: column; }
   .ledger-actions .outline-button, .ledger-actions .primary-button { width: 100%; }
+  .module-resource-list { grid-template-columns: 1fr; }
   .site-footer { gap: 5px; }
   kbd { display: none; }
 }
