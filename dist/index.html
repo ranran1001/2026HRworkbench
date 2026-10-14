@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="2026 HR 工作台与人事行政作品集展示" />
   <title>2026 HR Workbench</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=7" />
 </head>
 <body>
   <div class="app-shell">
@@ -130,10 +130,13 @@
       </section>
 
       <section id="portfolio" class="page-section portfolio-section">
-        <div class="section-heading"><div><p class="eyebrow">PORTFOLIO</p><h2>作品集</h2><p>选择按章节浏览，或下载完整 PDF。</p></div></div>
+        <div class="section-heading"><div><p class="eyebrow">PORTFOLIO</p><h2>作品集</h2><p>点击章节按钮直接查看，也可以下载完整版 PDF。</p></div></div>
         <div class="portfolio-panel panel">
-          <div class="portfolio-actions">
-            <button class="primary-button" id="open-portfolio">作品集展示 <span>→</span></button>
+          <div class="portfolio-actions" aria-label="作品集章节">
+            <button class="portfolio-option" type="button" data-portfolio-section="intro"><span><strong>自我介绍</strong><small>个人简介与工作经历</small></span><span class="portfolio-option-arrow">→</span></button>
+            <button class="portfolio-option" type="button" data-portfolio-section="results"><span><strong>成果展示</strong><small>项目案例与模拟样例</small></span><span class="portfolio-option-arrow">→</span></button>
+            <button class="portfolio-option" type="button" data-portfolio-section="outlook"><span><strong>规划展望</strong><small>入职后的工作规划</small></span><span class="portfolio-option-arrow">→</span></button>
+            <button class="portfolio-option" type="button" data-portfolio-section="more"><span><strong>更多……</strong></span><span class="portfolio-option-arrow">→</span></button>
             <a class="outline-button" id="download-full-portfolio" href="assets/portfolio/portfolio.pdf" download="作品集（通用版）.pdf">下载完整版 PDF <span>↓</span></a>
           </div>
         </div>
@@ -144,13 +147,13 @@
   </div>
 
   <dialog id="task-dialog" class="task-dialog">
-    <button class="dialog-close" id="dialog-close" type="button" aria-label="关闭">×</button>
+    <form class="dialog-close-form" method="dialog"><button class="dialog-close" id="dialog-close" type="submit" aria-label="关闭">×</button></form>
     <div id="dialog-content"></div>
   </dialog>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="template-data.js"></script>
-  <script src="app.js"></script>
-  <script src="workflow-modules.js"></script>
+  <script src="template-data.js?v=7"></script>
+  <script src="app.js?v=7"></script>
+  <script src="workflow-modules.js?v=7"></script>
 </body>
 </html>
 

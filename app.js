@@ -760,24 +760,18 @@ const portfolioSections = [
   { id: "more", title: "更多……", description: "", pages: [] },
 ];
 
-function openPortfolioSections() {
-  dialog.classList.add("portfolio-dialog");
-  dialogContent.innerHTML = `<div class="dialog-kicker">PORTFOLIO · 作品集</div><h2 class="dialog-title">选择要查看的内容</h2><p>每个部分都可以在下方窗口中连续滚动查看。</p><div class="portfolio-section-options">${portfolioSections.map((section) => `<button class="portfolio-option" type="button" data-portfolio-section="${section.id}"><span><strong>${section.title}</strong>${section.description ? `<small>${section.description}</small>` : ""}</span><span class="portfolio-option-arrow">→</span></button>`).join("")}</div>`;
-  dialog.showModal();
-  dialogContent.querySelectorAll("[data-portfolio-section]").forEach((button) => button.addEventListener("click", () => openPortfolioSection(button.dataset.portfolioSection)));
-}
-
 function openPortfolioSection(sectionId) {
   const section = portfolioSections.find((item) => item.id === sectionId);
   if (!section) return;
   dialog.classList.add("portfolio-dialog");
   if (section.id === "more") {
     dialogContent.innerHTML = "";
+    if (!dialog.open) dialog.showModal();
     return;
   }
   const pageLabel = `${section.pages.length} 页`;
-  dialogContent.innerHTML = `<div class="dialog-kicker">PORTFOLIO · ${section.title}</div><div class="portfolio-viewer-heading"><div><h2 class="dialog-title">${section.title}</h2><p>${section.description} · ${pageLabel}</p></div><button class="outline-button" type="button" id="portfolio-back">返回目录</button></div><div class="portfolio-page-stack" aria-label="${section.title}页面，可滚动查看">${section.pages.map((page, index) => `<figure class="portfolio-page"><img src="assets/portfolio/pages/page-${String(page).padStart(2, "0")}.png" alt="${section.title}，第 ${index + 1} 页" loading="${index > 1 ? "lazy" : "eager"}" /><figcaption>第 ${index + 1} 页</figcaption></figure>`).join("")}</div>`;
-  dialogContent.querySelector("#portfolio-back").addEventListener("click", openPortfolioSections);
+  dialogContent.innerHTML = `<div class="dialog-kicker">PORTFOLIO · ${section.title}</div><div class="portfolio-viewer-heading"><div><h2 class="dialog-title">${section.title}</h2><p>${section.description} · ${pageLabel}</p></div></div><div class="portfolio-page-stack" aria-label="${section.title}页面，可滚动查看">${section.pages.map((page, index) => `<figure class="portfolio-page"><img src="assets/portfolio/pages/page-${String(page).padStart(2, "0")}.png" alt="${section.title}，第 ${index + 1} 页" loading="${index > 1 ? "lazy" : "eager"}" /><figcaption>第 ${index + 1} 页</figcaption></figure>`).join("")}</div>`;
+  if (!dialog.open) dialog.showModal();
 }
 
 function hydrateTemplateLinks() {
@@ -1079,16 +1073,16 @@ document.querySelector("#reset-demo-data").addEventListener("click", () => {
   dialog.showModal();
 });
 document.querySelector("#open-ledger").addEventListener("click", openLedgerTool);
-document.querySelector("#open-portfolio").addEventListener("click", openPortfolioSections);
+document.querySelectorAll("[data-portfolio-section]").forEach((button) => button.addEventListener("click", () => openPortfolioSection(button.dataset.portfolioSection)));
 document.querySelector("[data-task='onboarding']").addEventListener("click", () => openTask("onboarding"));
 document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
-document.querySelector("#dialog-close").addEventListener("click", () => dialog.close());
 dialog.addEventListener("close", () => dialog.classList.remove("portfolio-dialog"));
-dialog.addEventListener("click", (event) => {
+document.addEventListener("click", (event) => {
+  if (!dialog.open || event.detail === 0) return;
   const bounds = dialog.getBoundingClientRect();
   const outside = event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom;
-  if (event.target === dialog || outside) dialog.close();
-});
+  if (outside) { event.preventDefault(); event.stopPropagation(); dialog.close(); }
+}, true);
 document.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); searchInput.focus(); }
 });
