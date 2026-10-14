@@ -1072,7 +1072,7 @@ document.querySelector("#reset-demo-data").addEventListener("click", () => {
   dialogContent.innerHTML = `<div class="dialog-kicker">DEMO DATA</div><h2 class="dialog-title">示例数据已重置</h2><p>工作台已恢复为初始脱敏示例。真实员工信息不会被写入这个公开版网页。</p>`;
   dialog.showModal();
 });
-document.querySelector("#open-ledger").addEventListener("click", openLedgerTool);
+document.querySelector("#open-ledger")?.addEventListener("click", openLedgerTool);
 document.querySelectorAll("[data-portfolio-section]").forEach((button) => button.addEventListener("click", () => openPortfolioSection(button.dataset.portfolioSection)));
 document.querySelector("[data-task='onboarding']").addEventListener("click", () => openTask("onboarding"));
 document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
