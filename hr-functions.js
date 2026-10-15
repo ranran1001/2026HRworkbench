@@ -62,11 +62,19 @@
       await navigator.clipboard.writeText(item.formula);
       button.textContent = '已复制 ✓';
     } catch {
-      const range = document.createRange();
-      const code = button.closest('.function-formula').querySelector('code');
-      range.selectNodeContents(code);
-      const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
-      button.textContent = '已选中，请复制';
+      const field = document.createElement('textarea');
+      field.value = item.formula; field.setAttribute('readonly', '');
+      field.style.position = 'fixed'; field.style.opacity = '0';
+      document.body.append(field); field.select();
+      const copied = document.execCommand('copy'); field.remove();
+      if (copied) button.textContent = '已复制 ✓';
+      else {
+        const range = document.createRange();
+        const code = button.closest('.function-formula').querySelector('code');
+        range.selectNodeContents(code);
+        const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
+        button.textContent = '已选中，请复制';
+      }
     }
     window.setTimeout(() => { if (button.isConnected) button.textContent = original; }, 2200);
   }
