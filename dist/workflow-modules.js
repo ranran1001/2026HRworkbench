@@ -368,4 +368,19 @@
     for(const [key,def] of Object.entries(moduleDefs)){const tab=def.tasks[taskTitle];if(tab){openModule(def,tab,"",taskTitle);return true;}}
     return false;
   };
+  window.getPracticalModuleRecords=(key)=>{
+    const def=moduleDefs[key];
+    if(!def)return {};
+    const defaults=Object.fromEntries(Object.entries(def.tabs).map(([tabKey,tab])=>[tabKey,tab.rows]));
+    return load(key,defaults);
+  };
+  window.openPracticalRecord=(key,tabKey,id)=>{
+    const def=moduleDefs[key];
+    if(!def||!def.tabs[tabKey])return false;
+    const defaults=Object.fromEntries(Object.entries(def.tabs).map(([tab,definition])=>[tab,definition.rows]));
+    const state=load(key,defaults);
+    if(!(state[tabKey]||[]).some((row)=>row.id===id))return false;
+    const dialog=rootDialog();if(!dialog.open)dialog.showModal();
+    openForm(def,state,key,tabKey,id);return true;
+  };
 })();

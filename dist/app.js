@@ -287,6 +287,48 @@ function applyQueueState() {
 }
 
 function renderInteractiveTool(title) {
+  if (title === "资料完整性检查") {
+    const labels = { entry: "入职登记", identity: "身份证明", education: "学历/资格材料", contract: "劳动合同", training: "培训/试用期记录" };
+    const rows = (workState.archiveRows || []).filter((row) => !row.archived);
+    const findings = rows.map((row) => ({ row, missing: Object.entries(labels).filter(([key]) => !row[key]).map(([, label]) => label) }));
+    return `<div class="dialog-kicker">常用工具 · 档案台账检查</div><h2 class="dialog-title">资料完整性检查</h2><p>直接读取入职档案与合同台账。这里只核对材料登记状态；“齐全”不代表原件、真实性或制度要求已完成人工核验。</p><div class="ledger-heading"><strong>检查结果 <span>${findings.filter((item) => item.missing.length).length} 条待补充</span></strong><small>数据来自当前浏览器的员工档案记录，修改原台账后重新打开即可刷新。</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>员工</th><th>缺少项目</th><th>处理</th></tr></thead><tbody>${findings.map(({ row, missing }) => `<tr><td><strong>${safeCell(row.name || row.id)}</strong><small>${safeCell(row.id)} · ${safeCell(row.department)}</small></td><td>${missing.length ? safeCell(missing.join("、")) : "登记项齐全，待人工核验"}</td><td><button class="text-button" data-integrity-record="${safeCell(row.id)}">打开档案 →</button></td></tr>`).join("") || `<tr><td colspan="3" class="ledger-empty">档案台账暂无员工记录</td></tr>`}</tbody></table></div><div class="org-notes"><strong>检查口径</strong><span>必查登记项：入职登记、身份证明、学历/资格材料、劳动合同、培训/试用期记录。仅标记空缺，不自动认定材料是否适用。</span></div>`;
+  }
+  if (title === "日期与提醒") {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const rows = [];
+    const seenDates = new Set();
+    const addDate = (date, type, label, owner, route, status = "", employeeKey = "") => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ""))) return;
+      const parsed = new Date(`${date}T00:00:00`);
+      if (Number.isNaN(parsed.getTime())) return;
+      const uniqueKey = `${type}|${employeeKey || label}|${date}`;
+      if (seenDates.has(uniqueKey)) return;
+      seenDates.add(uniqueKey);
+      const remaining = Math.round((parsed - today) / 86400000);
+      rows.push({ date, type, label, owner: owner || "未指定", route, status, remaining });
+    };
+    for (const row of workState.contractRows || []) if (!row.archived) addDate(row.endDate, "合同到期", `${row.name || row.id} · 合同到期`, row.owner, { kind: "ledger", id: row.id }, "", row.id);
+    const onboard = window.getPracticalModuleRecords?.("onboard") || {};
+    for (const row of onboard.probation || []) {
+      if (row.decision === "已转正") continue;
+      addDate(row.probationEnd, "试用期节点", `${row.employee || row.id} · 试用期目标日期`, row.owner, { kind: "module", key: "onboard", tab: "probation", id: row.id }, row.decision);
+      addDate(row.nextDate, "试用期跟进", `${row.employee || row.id} · 下一步跟进`, row.owner, { kind: "module", key: "onboard", tab: "probation", id: row.id }, row.hrReview);
+    }
+    for (const row of onboard.renewal || []) {
+      const employeeKey = row.employeeId || row.id;
+      addDate(row.contractEnd, "合同到期", `${row.employee || row.id} · 合同到期`, row.owner, { kind: "module", key: "onboard", tab: "renewal", id: row.id }, row.signStatus, employeeKey);
+      addDate(row.nextDate, "续签跟进", `${row.employee || row.id} · 下一步续签跟进`, row.owner, { kind: "module", key: "onboard", tab: "renewal", id: row.id }, row.signStatus);
+    }
+    const talent = window.getPracticalModuleRecords?.("talent") || {};
+    for (const row of talent.courses || []) if (!["已完成", "已取消"].includes(row.status)) addDate(row.date, "培训日期", `${row.name || row.id} · 培训安排`, row.owner, { kind: "module", key: "talent", tab: "courses", id: row.id }, row.status);
+    window.__hrReminderRows = rows;
+    const visible = (days = 30) => rows.filter((row) => row.remaining <= days).sort((a, b) => a.remaining - b.remaining || a.date.localeCompare(b.date));
+    const content = (days = 30) => visible(days).map((row) => {
+      const when = row.remaining < 0 ? `已逾期 ${Math.abs(row.remaining)} 天` : row.remaining === 0 ? "今天" : `${row.remaining} 天后`;
+      return `<tr><td><strong>${safeCell(row.date)}</strong><small>${safeCell(row.type)} · ${when}</small></td><td>${safeCell(row.label)}<small>${safeCell(row.owner)}${row.status ? ` · ${safeCell(row.status)}` : ""}</small></td><td><button class="text-button" data-reminder-route="${safeCell(JSON.stringify(row.route))}">去处理 →</button></td></tr>`;
+    }).join("") || `<tr><td colspan="3" class="ledger-empty">这个提醒范围内没有日期事项</td></tr>`;
+    return `<div class="dialog-kicker">常用工具 · 模块日期汇总</div><h2 class="dialog-title">日期与提醒</h2><p>从档案合同台账、试用期台账和培训计划读取日期。修改来源台账后重新打开即可更新；提醒只在工作台内显示，不会在网页关闭后推送。</p><label>显示范围<select id="reminder-window"><option value="7">未来 7 天及逾期</option><option value="30" selected>未来 30 天及逾期</option><option value="90">未来 90 天及逾期</option></select></label><div class="ledger-heading"><strong>待跟进节点 <span id="reminder-count">${visible().length}</span></strong><small>日期由对应模块台账提供，业务结论由 HR 核对。</small></div><div class="ledger-table-wrap"><table class="ledger-table"><thead><tr><th>日期 / 状态</th><th>事项 / 责任人</th><th>快捷入口</th></tr></thead><tbody id="reminder-rows">${content()}</tbody></table></div><div class="org-notes"><strong>数据来源</strong><span>03 入职档案与合同：合同到期、试用期目标与跟进日期；06 绩效培训与人才发展：培训计划日期。</span><span>该提醒会在当前网页打开时显示，不是系统日历或短信推送。</span></div>`;
+  }
   if (title === "检查档案完整性") {
     const a = workState.archive;
     return `<div class="dialog-kicker">TASK TOOL · 档案检查</div><h2 class="dialog-title">检查档案完整性</h2><p>填写一名员工的示例资料状态，系统会生成缺失项和下一步处理建议。数据会保存在当前浏览器。</p><form id="archive-check-form" class="mini-tool-form"><label>员工姓名<input name="employee" value="${a.employee}" required /></label><label>部门<input name="department" value="${a.department}" required /></label><fieldset><legend>材料状态</legend><label class="check-row"><input type="checkbox" name="entry" ${a.entry ? "checked" : ""} /> 入职登记</label><label class="check-row"><input type="checkbox" name="identity" ${a.identity ? "checked" : ""} /> 身份证明</label><label class="check-row"><input type="checkbox" name="education" ${a.education ? "checked" : ""} /> 学历/资格材料</label><label class="check-row"><input type="checkbox" name="contract" ${a.contract ? "checked" : ""} /> 劳动合同</label><label class="check-row"><input type="checkbox" name="training" ${a.training ? "checked" : ""} /> 培训/试用期记录</label></fieldset><button class="primary-button" type="submit">保存并生成结果 <span>→</span></button></form><div id="archive-result" class="tool-result" hidden></div>`;
@@ -299,6 +341,26 @@ function renderInteractiveTool(title) {
 }
 
 function bindInteractiveTool(title) {
+  if (title === "资料完整性检查") {
+    document.querySelectorAll("[data-integrity-record]").forEach((button) => button.addEventListener("click", () => openLedgerTool("员工档案与合同核对", button.dataset.integrityRecord)));
+  }
+  if (title === "日期与提醒") {
+    const picker = document.querySelector("#reminder-window");
+    picker.addEventListener("change", () => {
+      const days = Number(picker.value);
+      const rows = document.querySelector("#reminder-rows");
+      const count = document.querySelector("#reminder-count");
+      const all = window.__hrReminderRows || [];
+      const visible = all.filter((row) => row.remaining <= days).sort((a, b) => a.remaining - b.remaining || a.date.localeCompare(b.date));
+      count.textContent = String(visible.length);
+      rows.innerHTML = visible.map((row) => {
+        const when = row.remaining < 0 ? `已逾期 ${Math.abs(row.remaining)} 天` : row.remaining === 0 ? "今天" : `${row.remaining} 天后`;
+        return `<tr><td><strong>${safeCell(row.date)}</strong><small>${safeCell(row.type)} · ${when}</small></td><td>${safeCell(row.label)}<small>${safeCell(row.owner)}${row.status ? ` · ${safeCell(row.status)}` : ""}</small></td><td><button class="text-button" data-reminder-route="${safeCell(JSON.stringify(row.route))}">去处理 →</button></td></tr>`;
+      }).join("") || `<tr><td colspan="3" class="ledger-empty">这个提醒范围内没有日期事项</td></tr>`;
+      bindReminderRoutes();
+    });
+    document.querySelectorAll("[data-reminder-route]").forEach((button) => button.addEventListener("click", () => routeToReminder(button.dataset.reminderRoute)));
+  }
   if (title === "检查档案完整性") {
     document.querySelector("#archive-check-form").addEventListener("submit", (event) => {
       event.preventDefault();
@@ -332,6 +394,17 @@ function bindInteractiveTool(title) {
       result.innerHTML = `<strong>${form.get("employee")}：${status}</strong><p>合同结束日：${form.get("endDate")} · 剩余 ${remaining} 天 · 提前 ${days} 天提醒</p><small>下一步：核对合同台账、部门意见和员工意向；不要仅凭公式自动决定续签或终止。</small>`;
     });
   }
+}
+
+function routeToReminder(rawRoute) {
+  let route;
+  try { route = JSON.parse(rawRoute); } catch { return; }
+  if (route.kind === "ledger") openLedgerTool("员工档案与合同核对", route.id);
+  else if (route.kind === "module") window.openPracticalRecord?.(route.key, route.tab, route.id);
+}
+
+function bindReminderRoutes() {
+  document.querySelectorAll("[data-reminder-route]").forEach((button) => button.addEventListener("click", () => routeToReminder(button.dataset.reminderRoute)));
 }
 
 function contractStatus(row) {
@@ -369,7 +442,7 @@ function restoreEmployee(id) {
   openLedgerTool("", "all", true);
 }
 
-function openLedgerTool(taskTitle = "员工档案与合同核对") {
+function openLedgerTool(taskTitle = "员工档案与合同核对", targetRecordId = "") {
   const render = (keyword = "", statusFilter = "all", showArchived = false) => {
     const query = keyword.trim().toLowerCase();
     const linkSummary = getEmployeeLinkSummary();
@@ -407,7 +480,8 @@ function openLedgerTool(taskTitle = "员工档案与合同核对") {
     document.querySelector("#ledger-close").addEventListener("click", () => dialog.close());
   };
   render();
-  dialog.showModal();
+  if (!dialog.open) dialog.showModal();
+  if (targetRecordId) [...document.querySelectorAll("[data-edit-id]")].find((button) => button.dataset.editId === targetRecordId)?.click();
 }
 
 function openEmployeeForm(id = "") {
@@ -1073,6 +1147,12 @@ document.querySelector("#reset-demo-data").addEventListener("click", () => {
   dialog.showModal();
 });
 document.querySelector("#open-ledger")?.addEventListener("click", openLedgerTool);
+for (const [selector, title] of [["#open-integrity-check", "资料完整性检查"], ["#open-date-reminders", "日期与提醒"]]) {
+  const card = document.querySelector(selector);
+  const open = () => openTask(title);
+  card?.addEventListener("click", open);
+  card?.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(); } });
+}
 document.querySelectorAll("[data-portfolio-section]").forEach((button) => button.addEventListener("click", () => openPortfolioSection(button.dataset.portfolioSection)));
 document.querySelector("[data-task='onboarding']").addEventListener("click", () => openTask("onboarding"));
 document.querySelectorAll(".queue-row[data-task-title]").forEach((row) => row.addEventListener("click", () => openTask(row.dataset.taskTitle)));
