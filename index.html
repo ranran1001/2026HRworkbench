@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="2026 HR 工作台与人事行政作品集展示" />
   <title>2026 HR Workbench</title>
-  <link rel="stylesheet" href="styles.css?v=10" />
+  <link rel="stylesheet" href="styles.css?v=11" />
 </head>
 <body>
   <div class="app-shell">
@@ -123,7 +123,7 @@
       <section id="tools" class="page-section">
         <div class="section-heading"><div><p class="eyebrow">SMALL TOOLS, REAL TIME SAVED</p><h2>常用工具</h2></div></div>
         <div class="tool-grid">
-          <article class="tool-card"><div class="tool-icon">ƒ</div><div><h3>HR Excel函数</h3><p>从筛选、排序开始，逐步补齐人事常用公式。</p></div><span>待补充</span></article>
+          <article class="tool-card tool-card-action" id="open-hr-functions" role="button" tabindex="0" aria-haspopup="dialog"><div class="tool-icon">ƒ</div><div><h3>HR Excel函数</h3><p>先看 HR 高频公式，再按名称查找和复制常用函数。</p></div><span>108 个精选函数　→</span></article>
           <article class="tool-card"><div class="tool-icon">✓</div><div><h3>资料完整性检查</h3><p>按任务核对入职、合同和档案材料是否齐全。</p></div><span>原型中</span></article>
           <article class="tool-card"><div class="tool-icon">↗</div><div><h3>日期与提醒</h3><p>试用期、合同到期和培训节点的提醒入口。</p></div><span>待补充</span></article>
         </div>
@@ -153,6 +153,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="template-data.js?v=10"></script>
   <script src="app.js?v=10"></script>
+  <script src="hr-functions.js?v=1"></script>
   <script src="workflow-modules.js?v=11"></script>
 </body>
 </html>
