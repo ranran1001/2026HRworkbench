@@ -71,7 +71,7 @@
     ],
   };
   window.renderModuleResources = (moduleKey) => {
-    const files = moduleResources[moduleKey] || [];
+    const files = (moduleResources[moduleKey] || []).filter((file) => file.type !== "案例参考");
     if (!files.length) return "";
     return `<details class="module-resource-library"><summary>配套模板下载</summary><p>按模块整理的 Excel 模板、Word 表单与流程资料；请先替换示例内容，并核对本单位制度。</p><div class="module-resource-list">${files.map((file) => {
       const path = file.path.startsWith("source-templates/") || file.path.startsWith("module-resources/") || file.path.startsWith("HR档案") || file.path.startsWith("HR合同")
