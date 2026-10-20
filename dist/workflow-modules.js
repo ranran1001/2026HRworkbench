@@ -2,82 +2,82 @@
 (() => {
   const moduleResources = {
     org: [
-      { title: "组织与岗位编制表", type: "Excel原表", path: "source-templates/01-组织与岗位-人员编制增减表-原表.xlsx" },
-      { title: "定岗定编定员全套表（含岗位说明书）", type: "即课学堂原表 · 4张工作表", path: "module-resources/org/【工具表格】定岗定编定员附表全套(4项).xlsx" },
-      { title: "招聘岗位人才画像与招聘环节表", type: "即课学堂原表 · 2张工作表", path: "module-resources/recruit/招聘岗位人才画像.xlsx" },
+      { title: "组织与岗位编制表", type: "Excel模板", path: "source-templates/01-组织与岗位-人员编制增减表-原表.xlsx" },
+      { title: "定岗定编定员全套表（含岗位说明书）", type: "Excel 模板 · 4张工作表", path: "module-resources/org/【工具表格】定岗定编定员附表全套(4项).xlsx" },
+      { title: "招聘岗位人才画像与招聘环节表", type: "Excel 模板 · 2张工作表", path: "module-resources/recruit/招聘岗位人才画像.xlsx" },
     ],
     recruit: [
-      { title: "招聘需求、面试与入职跟进表", type: "Excel原表", path: "source-templates/02-招聘与人才获取-招聘需求面试入职统计表-原表.xlsx" },
+      { title: "招聘需求、面试与入职跟进表", type: "Excel模板", path: "source-templates/02-招聘与人才获取-招聘需求面试入职统计表-原表.xlsx" },
       { title: "常规招聘流程表", type: "Excel流程", path: "招聘流程表.xlsx" },
       { title: "招聘需求评估表", type: "Excel模板", path: "招聘需求评估表.xlsx" },
       { title: "电话面试邀约话术", type: "Excel话术", path: "电话面试邀约话术.xlsx" },
-      { title: "招聘岗位人才画像与招聘环节表", type: "即课学堂原表 · 2张工作表", path: "module-resources/recruit/招聘岗位人才画像.xlsx" },
+      { title: "招聘岗位人才画像与招聘环节表", type: "Excel 模板 · 2张工作表", path: "module-resources/recruit/招聘岗位人才画像.xlsx" },
       { title: "结构化面试提纲", type: "Excel模板", path: "HR结构化面试提纲.xlsx" },
       { title: "面试基本流程", type: "Word流程", path: "面试基本流程.docx" },
-      { title: "招聘全流程模拟案例", type: "模拟案例", path: "招聘全流程模拟案例.docx" },
-      { title: "招聘全流程模拟练习表", type: "Excel练习表", path: "招聘全流程模拟练习表.xlsx" },
+      { title: "招聘流程案例参考", type: "案例参考", path: "招聘全流程模拟案例.docx" },
+      { title: "招聘流程记录模板", type: "Excel模板", path: "招聘全流程模拟练习表.xlsx" },
     ],
     onboard: [
-      { title: "劳动合同到期提醒", type: "Excel原表", path: "source-templates/03-入职档案与合同-劳动合同到期提醒-原表.xlsx" },
+      { title: "劳动合同到期提醒", type: "Excel模板", path: "source-templates/03-入职档案与合同-劳动合同到期提醒-原表.xlsx" },
       { title: "档案完整性检查模板", type: "Excel模板", path: "HR档案完整性清单模板.xlsx" },
       { title: "合同到期提醒模板", type: "Excel模板", path: "HR合同到期提醒模板.xlsx" },
       { title: "新员工入职流程", type: "Word流程", path: "module-resources/onboard/新员工入职流程.docx" },
-      { title: "出入职管理模拟案例", type: "模拟案例", path: "module-resources/onboard/入职管理模拟案例.docx" },
-      { title: "入职管理练习表", type: "Excel练习表", path: "module-resources/onboard/入职管理练习表.xlsx" },
-      { title: "员工入职登记与动态查询表", type: "即课学堂原表", path: "module-resources/onboard/236入职登记表-可查询.xlsx" },
-      { title: "员工试用期管理登记表", type: "即课学堂原表 · 含到期跟踪公式", path: "module-resources/onboard/22员工试用期管理登记表.xlsx" },
-      { title: "员工花名册与生日、合同提醒表", type: "即课学堂原表 · 含提醒公式", path: "module-resources/onboard/76员工花名册-生日合同提醒.xlsx" },
+      { title: "入转离流程案例参考", type: "案例参考", path: "module-resources/onboard/入职管理模拟案例.docx" },
+      { title: "入职信息登记模板", type: "Excel模板", path: "module-resources/onboard/入职管理练习表.xlsx" },
+      { title: "员工入职登记与动态查询表", type: "Excel 模板", path: "module-resources/onboard/236入职登记表-可查询.xlsx" },
+      { title: "员工试用期管理登记表", type: "Excel 模板 · 含到期跟踪公式", path: "module-resources/onboard/22员工试用期管理登记表.xlsx" },
+      { title: "员工花名册与生日、合同提醒表", type: "Excel 模板 · 含提醒公式", path: "module-resources/onboard/76员工花名册-生日合同提醒.xlsx" },
     ],
     attendance: [
-      { title: "考勤自动统计分析表", type: "Excel原表", path: "source-templates/04-考勤与假勤-考勤自动统计分析-原表.xlsx" },
+      { title: "考勤自动统计分析表", type: "Excel模板", path: "source-templates/04-考勤与假勤-考勤自动统计分析-原表.xlsx" },
       { title: "年假剩余天数计算表", type: "Excel公式表", path: "module-resources/attendance/员工年假统计表（自动计算剩余年假）.xlsx" },
-      { title: "员工月度请休假登记表", type: "即课学堂原表 · 含汇总公式", path: "module-resources/attendance/员工月度请休假登记表.xlsx" },
-      { title: "考勤假期模拟案例", type: "模拟案例", path: "module-resources/attendance/考勤假期模拟案例.docx" },
-      { title: "考勤假期练习表", type: "Excel练习表", path: "module-resources/attendance/考勤假期练习表.xlsx" },
+      { title: "员工月度请休假登记表", type: "Excel 模板 · 含汇总公式", path: "module-resources/attendance/员工月度请休假登记表.xlsx" },
+      { title: "考勤异常处理案例参考", type: "案例参考", path: "module-resources/attendance/考勤假期模拟案例.docx" },
+      { title: "考勤与假期记录模板", type: "Excel模板", path: "module-resources/attendance/考勤假期练习表.xlsx" },
     ],
     reward: [
-      { title: "工资、社保与个税自动计算表", type: "Excel公式原表", path: "source-templates/05-薪酬社保福利-工资表社保个税自动计算-原表.xlsx" },
-      { title: "薪酬核算模拟案例", type: "模拟案例", path: "module-resources/payroll/薪酬核算模拟案例.docx" },
-      { title: "薪酬核算练习表", type: "Excel练习表", path: "module-resources/payroll/薪酬核算练习表.xlsx" },
+      { title: "工资、社保与个税自动计算表", type: "Excel公式模板", path: "source-templates/05-薪酬社保福利-工资表社保个税自动计算-原表.xlsx" },
+      { title: "薪酬核算案例参考", type: "案例参考", path: "module-resources/payroll/薪酬核算模拟案例.docx" },
+      { title: "薪酬核算模板", type: "Excel模板", path: "module-resources/payroll/薪酬核算练习表.xlsx" },
     ],
     talent: [
-      { title: "绩效考核与培训记录表", type: "Excel原表", path: "source-templates/06-绩效培训人才发展-绩效考核得分记录表-原表.xlsx" },
-      { title: "年度培训计划及预算表", type: "即课学堂原表 · 含自动统计公式", path: "module-resources/training/年度培训计划及预算表.xlsx" },
+      { title: "绩效考核与培训记录表", type: "Excel模板", path: "source-templates/06-绩效培训人才发展-绩效考核得分记录表-原表.xlsx" },
+      { title: "年度培训计划及预算表", type: "Excel 模板 · 含自动统计公式", path: "module-resources/training/年度培训计划及预算表.xlsx" },
       { title: "培训实施流程", type: "Word流程", path: "module-resources/training/培训实施流程.docx" },
       { title: "培训效果评估流程", type: "Word流程", path: "module-resources/training/培训效果评估流程.docx" },
       { title: "培训通知", type: "Word模板", path: "module-resources/training/培训通知.docx" },
       { title: "培训签到表", type: "Word模板", path: "module-resources/training/培训签到表.docx" },
       { title: "培训反馈问卷", type: "Word模板", path: "module-resources/training/培训反馈问卷.docx" },
-      { title: "培训发展模拟案例", type: "模拟案例", path: "module-resources/training/培训发展模拟案例.docx" },
-      { title: "培训发展练习表", type: "Excel练习表", path: "module-resources/training/培训发展练习表.xlsx" },
-      { title: "企业文化与员工活动模拟案例", type: "模拟案例", path: "module-resources/training/企业文化与员工活动模拟案例.docx" },
+      { title: "培训实施案例参考", type: "案例参考", path: "module-resources/training/培训发展模拟案例.docx" },
+      { title: "培训发展记录模板", type: "Excel模板", path: "module-resources/training/培训发展练习表.xlsx" },
+      { title: "企业文化与员工活动案例参考", type: "案例参考", path: "module-resources/training/企业文化与员工活动模拟案例.docx" },
       { title: "企业文化与员工活动模板", type: "Excel多表模板", path: "module-resources/training/企业文化与员工活动模板.xlsx" },
     ],
     relation: [
-      { title: "员工离职审批与交接清单", type: "即课学堂原表 · 3张工作表", path: "module-resources/relation/193员工离职申请审批表-含离职交接.xlsx" },
+      { title: "员工离职审批与交接清单", type: "Excel 模板 · 3张工作表", path: "module-resources/relation/193员工离职申请审批表-含离职交接.xlsx" },
       { title: "员工关系与HRSSC工作指引", type: "Word指引", path: "module-resources/relation/员工关系与HRSSC工作指引.docx" },
       { title: "员工关系日常工作清单", type: "Excel清单", path: "module-resources/relation/员工关系工作清单.xlsx" },
       { title: "员工关怀全生命周期表", type: "Excel模板", path: "module-resources/relation/员工关怀全生命周期.xlsx" },
       { title: "员工关怀落地指引", type: "Word指引", path: "module-resources/relation/员工关怀落地指引.docx" },
-      { title: "公司员工关怀体系模板", type: "即课学堂原表 · 3张工作表", path: "module-resources/relation/公司员工关怀体系(草案).xlsx" },
+      { title: "公司员工关怀体系模板", type: "Excel 模板 · 3张工作表", path: "module-resources/relation/公司员工关怀体系(草案).xlsx" },
       { title: "员工调岗与薪酬变动流程图", type: "Word流程图", path: "module-resources/relation/员工调岗薪酬变动流程图.docx" },
       { title: "员工离职交接流程", type: "Word流程", path: "module-resources/relation/员工离职交接流程.docx" },
-      { title: "员工关系冲突模拟案例", type: "模拟案例", path: "module-resources/relation/员工关系模拟案例.docx" },
-      { title: "员工关系练习表", type: "Excel练习表", path: "module-resources/relation/员工关系练习表.xlsx" },
+      { title: "员工关系沟通案例参考", type: "案例参考", path: "module-resources/relation/员工关系模拟案例.docx" },
+      { title: "员工关系事项跟进模板", type: "Excel模板", path: "module-resources/relation/员工关系练习表.xlsx" },
     ],
     data: [
-      { title: "HR月报明细与统计系统", type: "Excel公式原表", path: "source-templates/08-HR数据与运营-人事月报明细系统-原表.xlsx" },
+      { title: "HR月报明细与统计系统", type: "Excel公式模板", path: "source-templates/08-HR数据与运营-人事月报明细系统-原表.xlsx" },
       { title: "员工入职到离职全生命周期流程", type: "Excel流程表", path: "module-resources/data/员工全生命周期工作流程.xlsx" },
     ],
   };
   window.renderModuleResources = (moduleKey) => {
     const files = moduleResources[moduleKey] || [];
     if (!files.length) return "";
-    return `<details class="module-resource-library"><summary>配套模板下载</summary><p>按模块整理的 Excel 原表、Word 表单与流程资料；如含示例内容请先替换，并核对本单位制度。</p><div class="module-resource-list">${files.map((file) => {
+    return `<details class="module-resource-library"><summary>配套模板下载</summary><p>按模块整理的 Excel 模板、Word 表单与流程资料；请先替换示例内容，并核对本单位制度。</p><div class="module-resource-list">${files.map((file) => {
       const path = file.path.startsWith("source-templates/") || file.path.startsWith("module-resources/") || file.path.startsWith("HR档案") || file.path.startsWith("HR合同")
         ? file.path
         : `module-resources/${moduleKey}/${file.path}`;
-      return `<a class="module-resource-link" href="assets/${path.split("/").map(encodeURIComponent).join("/")}" download><span><strong>${file.title}</strong><small>${file.type}</small></span><b>下载</b></a>`;
+      return `<a class="module-resource-link" href="assets/${path.split("/").map(encodeURIComponent).join("/")}" download="${file.title}.${file.path.split(".").pop().toLowerCase()}"><span><strong>${file.title}</strong><small>${file.type}</small></span><b>下载</b></a>`;
     }).join("")}</div></details>`;
   };
   const moduleDefs = {
