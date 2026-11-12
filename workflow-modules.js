@@ -30,6 +30,7 @@
     ],
     attendance: [
       { title: "考勤自动统计分析表", type: "Excel模板", path: "source-templates/04-考勤与假勤-考勤自动统计分析-原表.xlsx" },
+      { title: "物业场景打卡原始表 · 单页上传样例", type: "Excel原始数据样例（虚构）", path: "module-resources/attendance/物业50人打卡原始表-单页上传样例.xlsx" },
       { title: "年假剩余天数计算表", type: "Excel公式表", path: "module-resources/attendance/员工年假统计表（自动计算剩余年假）.xlsx" },
       { title: "员工月度请休假登记表", type: "Excel 模板 · 含汇总公式", path: "module-resources/attendance/员工月度请休假登记表.xlsx" },
       { title: "考勤异常处理案例参考", type: "案例参考", path: "module-resources/attendance/考勤假期模拟案例.docx" },
